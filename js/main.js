@@ -2,7 +2,6 @@
  * ============================================================================
  * CONTROLADOR PRINCIPAL Y FLUJO DE APLICACIÓN (SPA)
  * Plataforma Corporativa de Capacitación - Conecta Carga
- * Sincronizado exactamente con las pantallas e IDs del index.html
  * ============================================================================
  */
 
@@ -21,7 +20,7 @@ document.addEventListener('DOMContentLoaded', () => {
     ];
 
     /**
-     * Cambia la visibilidad de las pantallas en la SPA.
+     * Cambia la visibilidad de las pantallas en la SPA de forma segura.
      * @param {string} idPantalla - ID de la sección a mostrar.
      */
     function mostrarPantalla(idPantalla) {
@@ -31,9 +30,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (id === idPantalla) {
                     el.classList.remove('oculta', 'd-none');
                     el.classList.add('activa');
+                    el.style.display = 'block'; // Forzado explícito para evitar bloqueos CSS
                 } else {
                     el.classList.remove('activa');
                     el.classList.add('oculta');
+                    el.style.display = 'none';
                 }
             }
         });
@@ -54,11 +55,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     /**
      * PANTALLA 1: BIENVENIDA
+     * Se agrega e.preventDefault() y respaldo por delegación de eventos.
      */
     function configurarBienvenida() {
         const btnIniciar = document.getElementById('btn-iniciar-capacitacion');
         if (btnIniciar) {
-            btnIniciar.addEventListener('click', () => {
+            btnIniciar.addEventListener('click', (e) => {
+                e.preventDefault();
                 mostrarPantalla('pantalla-formulario');
             });
         }
@@ -72,7 +75,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const btnVolver = document.getElementById('btn-volver-bienvenida');
 
         if (btnVolver) {
-            btnVolver.addEventListener('click', () => {
+            btnVolver.addEventListener('click', (e) => {
+                e.preventDefault();
                 mostrarPantalla('pantalla-bienvenida');
             });
         }
@@ -87,7 +91,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 const errorCorreo = document.getElementById('error-correo');
                 const alertaFormulario = document.getElementById('alerta-formulario');
 
-                // Ocultar mensajes previos
                 if (errorNombre) errorNombre.classList.add('oculta');
                 if (errorCorreo) errorCorreo.classList.add('oculta');
                 if (alertaFormulario) alertaFormulario.classList.add('oculta');
@@ -113,7 +116,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 if (tieneErrores) return;
 
-                // Mostrar cargador y validar correo duplicado en Google Sheets
                 if (typeof Utilidades !== 'undefined') Utilidades.toggleCargando(true, 'Verificando registro previo...');
 
                 let resultadoVerificacion = { duplicado: false };
@@ -132,7 +134,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     return;
                 }
 
-                // Guardar usuario en el estado y pasar a lectura
                 if (typeof GestorProgreso !== 'undefined') {
                     GestorProgreso.establecerUsuario(nombre, correo);
                 }
@@ -142,21 +143,22 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    /**
-     * PANTALLA 3 Y 4: LECTURA Y EXAMEN
-     */
     function configurarEventosGenerales() {
-        // Escuchar eventos globales de la aplicación si existen en otros módulos
         window.addEventListener('cambioDePantalla', (e) => {
             if (e.detail && e.detail.pantalla) {
                 mostrarPantalla(e.detail.pantalla);
             }
         });
+
+        // Respaldo global por si el botón de bienvenida se clickea antes de enlazar su evento directo
+        document.addEventListener('click', (e) => {
+            if (e.target && e.target.closest('#btn-iniciar-capacitacion')) {
+                e.preventDefault();
+                mostrarPantalla('pantalla-formulario');
+            }
+        });
     }
 
-    /**
-     * PANTALLA 5: CONFIRMACIONES LEGALES
-     */
     function configurarConfirmaciones() {
         const checkLectura = document.getElementById('check-lectura');
         const checkComprension = document.getElementById('check-comprension');
@@ -166,8 +168,8 @@ document.addEventListener('DOMContentLoaded', () => {
         function validarChecks() {
             const ambosAceptados = checkLectura && checkLectura.checked && checkComprension && checkComprension.checked;
             if (btnIrFirma) btnIrFirma.disabled = !ambosAceptados;
-            if (alertaConfirmaciones) {
-                if (ambosAceptados) alertaConfirmaciones.classList.add('oculta');
+            if (alertaConfirmaciones && ambosAceptados) {
+                alertaConfirmaciones.classList.add('oculta');
             }
         }
 
@@ -175,7 +177,8 @@ document.addEventListener('DOMContentLoaded', () => {
         if (checkComprension) checkComprension.addEventListener('change', validarChecks);
 
         if (btnIrFirma) {
-            btnIrFirma.addEventListener('click', () => {
+            btnIrFirma.addEventListener('click', (e) => {
+                e.preventDefault();
                 if (checkLectura && checkComprension && checkLectura.checked && checkComprension.checked) {
                     mostrarPantalla('pantalla-firma');
                 } else if (alertaConfirmaciones) {
@@ -185,9 +188,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    /**
-     * PANTALLA 6: FIRMA DIGITAL Y ENVÍO FINAL
-     */
     function configurarFirma() {
         const btnLimpiar = document.getElementById('btn-limpiar-firma');
         const btnVolver = document.getElementById('btn-volver-confirmaciones');
@@ -195,19 +195,22 @@ document.addEventListener('DOMContentLoaded', () => {
         const errorFirma = document.getElementById('error-firma');
 
         if (btnVolver) {
-            btnVolver.addEventListener('click', () => {
+            btnVolver.addEventListener('click', (e) => {
+                e.preventDefault();
                 mostrarPantalla('pantalla-confirmaciones');
             });
         }
 
         if (btnLimpiar) {
-            btnLimpiar.addEventListener('click', () => {
+            btnLimpiar.addEventListener('click', (e) => {
+                e.preventDefault();
                 if (typeof FirmaDigital !== 'undefined') FirmaDigital.limpiar();
             });
         }
 
         if (btnGuardar) {
-            btnGuardar.addEventListener('click', async () => {
+            btnGuardar.addEventListener('click', async (e) => {
+                e.preventDefault();
                 if (errorFirma) errorFirma.classList.add('oculta');
 
                 if (typeof FirmaDigital !== 'undefined' && !FirmaDigital.esValida()) {
@@ -254,10 +257,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    /**
-     * PANTALLA 7: RESUMEN FINAL Y REINICIO
-     * @param {Object} datos 
-     */
     function renderizarResumenFinal(datos) {
         const elNombre = document.getElementById('resumen-nombre');
         const elCorreo = document.getElementById('resumen-correo');
@@ -273,7 +272,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const btnReiniciar = document.getElementById('btn-reiniciar-portal');
         if (btnReiniciar) {
-            btnReiniciar.onclick = () => {
+            btnReiniciar.onclick = (e) => {
+                e.preventDefault();
                 if (typeof GestorProgreso !== 'undefined') GestorProgreso.reiniciar();
                 mostrarPantalla('pantalla-bienvenida');
             };
@@ -281,25 +281,30 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     /**
-     * INICIALIZACIÓN GENERAL DE LA APLICACIÓN
+     * INICIALIZACIÓN SEGURA DE LA APLICACIÓN
+     * Cada función está dentro de un try/catch para evitar que un fallo detenga a las demás.
      */
     function inicializarApp() {
-        // Inicializar Canvas de firma digital
+        // 1. Configurar eventos principales primero
+        try { configurarBienvenida(); } catch (e) { console.error('Error al configurar bienvenida:', e); }
+        try { configurarFormularioRegistro(); } catch (e) { console.error('Error al configurar formulario:', e); }
+        try { configurarEventosGenerales(); } catch (e) { console.error('Error al configurar eventos generales:', e); }
+        try { configurarConfirmaciones(); } catch (e) { console.error('Error al configurar confirmaciones:', e); }
+        try { configurarFirma(); } catch (e) { console.error('Error al configurar firma:', e); }
+
+        // 2. Inicializar firma digital sólo si existe la librería sin bloquear el flujo
         if (typeof FirmaDigital !== 'undefined') {
-            FirmaDigital.inicializar('canvas-firma');
+            try {
+                FirmaDigital.inicializar('canvas-firma');
+            } catch (err) {
+                console.warn('No se pudo inicializar el canvas de firma al arrancar:', err);
+            }
         }
 
-        // Configurar escuchadores de eventos
-        configurarBienvenida();
-        configurarFormularioRegistro();
-        configurarEventosGenerales();
-        configurarConfirmaciones();
-        configurarFirma();
-
-        // Mostrar la pantalla inicial de bienvenida
+        // 3. Forzar el estado visible de la pantalla inicial
         mostrarPantalla('pantalla-bienvenida');
 
-        // Garantizar que el loader esté oculto al iniciar
+        // 4. Ocultar cargador explícitamente
         if (typeof Utilidades !== 'undefined') {
             Utilidades.toggleCargando(false);
         }
