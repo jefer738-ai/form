@@ -5,47 +5,44 @@
  * ============================================================================
  */
 
-/**
- * ============================================================================
- * CONTROLADOR PRINCIPAL Y FLUJO DE APLICACIÓN
- * Plataforma Corporativa de Capacitación - Conecta Carga
- * ============================================================================
- */
-
-(() => {
+document.addEventListener('DOMContentLoaded', () => {
     'use strict';
 
-    document.addEventListener('DOMContentLoaded', () => {
-        // Referencias a las vistas/pasos en el DOM
-        const pasos = {
-            1: document.getElementById('paso-registro'),
-            2: document.getElementById('paso-lectura'),
-            3: document.getElementById('paso-evaluacion'),
-            4: document.getElementById('paso-firma'),
-            5: document.getElementById('paso-completado')
-        };
+    // Referencias a las vistas/pasos en el DOM
+    const pasos = {
+        1: document.getElementById('paso-registro'),
+        2: document.getElementById('paso-lectura'),
+        3: document.getElementById('paso-evaluacion'),
+        4: document.getElementById('paso-firma'),
+        5: document.getElementById('paso-completado')
+    };
 
-        const inicializarApp = () => {
-            configurarNavegacionPasoAPaso();
-            configurarFormularioRegistro();
-            configurarLectorCapacitacion();
-            configurarEvaluacionEventos();
-            configurarFirmaEventos();
+    /**
+     * Función de inicialización general de la app
+     */
+    function inicializarApp() {
+        configurarNavegacionPasoAPaso();
+        configurarFormularioRegistro();
+        configurarLectorCapacitacion();
+        configurarEvaluacionEventos();
+        configurarFirmaEventos();
 
-            FirmaDigital.inicializar('canvas-firma');
+        // Inicializar Canvas de firma
+        FirmaDigital.inicializar('canvas-firma');
 
-            const estadoActual = GestorProgreso.obtenerEstado();
-            mostrarPaso(estadoActual.pasoActual || 1);
+        // Restaurar estado si existía una sesión previa
+        const estadoActual = GestorProgreso.obtenerEstado();
+        mostrarPaso(estadoActual.pasoActual || 1);
 
-            Utilidades.toggleCargando(false);
-        };
+        // Ocultar cargador al iniciar
+        Utilidades.toggleCargando(false);
+    }
 
-        // ... resto de las funciones auxiliares (mostrarPaso, configurarNavegacionPasoAPaso, etc.) ...
-
-        inicializarApp();
-    });
-})();
-    const mostrarPaso = (numeroPaso) => {
+    /**
+     * Cambia la visibilidad de las pantallas según el paso especificado.
+     * @param {number} numeroPaso - Paso del 1 al 5.
+     */
+    function mostrarPaso(numeroPaso) {
         Object.keys(pasos).forEach((pKey) => {
             if (pasos[pKey]) {
                 if (parseInt(pKey, 10) === numeroPaso) {
@@ -68,12 +65,12 @@
         }
 
         window.scrollTo({ top: 0, behavior: 'smooth' });
-    };
+    }
 
     /**
      * Vincula el evento de cambio de paso emitido por el GestorProgreso.
      */
-    const configurarNavegacionPasoAPaso = () => {
+    function configurarNavegacionPasoAPaso() {
         window.addEventListener('cambioDePaso', (e) => {
             mostrarPaso(e.detail.paso);
         });
@@ -85,12 +82,12 @@
                 contadorEl.textContent = Utilidades.formatearTiempo(e.detail.segundos);
             }
         });
-    };
+    }
 
     /**
      * Gestiona el registro inicial e integra la verificación de correo duplicado en Google Sheets.
      */
-    const configurarFormularioRegistro = () => {
+    function configurarFormularioRegistro() {
         const formRegistro = document.getElementById('form-registro-colaborador');
         if (!formRegistro) return;
 
@@ -132,12 +129,12 @@
             GestorProgreso.establecerUsuario(nombre, correo);
             GestorProgreso.cambiarPaso(2);
         });
-    };
+    }
 
     /**
      * Configura la verificación de lectura obligatoria del material.
      */
-    const configurarLectorCapacitacion = () => {
+    function configurarLectorCapacitacion() {
         const btnEntendido = document.getElementById('btn-confirmar-lectura');
         const checkLectura = document.getElementById('check-confirmacion-lectura');
 
@@ -153,12 +150,12 @@
                 GestorProgreso.cambiarPaso(3);
             });
         }
-    };
+    }
 
     /**
      * Vincula los botones de acción de la evaluación.
      */
-    const configurarEvaluacionEventos = () => {
+    function configurarEvaluacionEventos() {
         const btnEnviar = document.getElementById('btn-enviar-evaluacion');
         const btnReintentar = document.getElementById('btn-reintentar-evaluacion');
         const btnIrFirma = document.getElementById('btn-ir-firma');
@@ -180,12 +177,12 @@
                 GestorProgreso.cambiarPaso(4);
             });
         }
-    };
+    }
 
     /**
      * Configura el lienzo de firma, checkboxes de conformidad y el envío final de datos.
      */
-    const configurarFirmaEventos = () => {
+    function configurarFirmaEventos() {
         const btnLimpiar = document.getElementById('btn-limpiar-firma');
         const checkComprension = document.getElementById('check-declaracion-comprension');
         const btnFinalizar = document.getElementById('btn-finalizar-capacitacion');
@@ -253,13 +250,13 @@
                 }
             });
         }
-    };
+    }
 
     /**
      * Renderiza el comprobante final de conclusión exitosa.
      * @param {Object} datos 
      */
-    const renderizarResumenFinal = (datos) => {
+    function renderizarResumenFinal(datos) {
         const contenedorResumen = document.getElementById('resumen-comprobante');
         if (!contenedorResumen) return;
 
@@ -279,13 +276,8 @@
                 </div>
             </div>
         `;
-    };
+    }
 
-    // Restaurar estado si existía una sesión previa
-    const estadoActual = GestorProgreso.obtenerEstado();
-    mostrarPaso(estadoActual.pasoActual || 1);
-
-    // AGREGAR ESTA LÍNEA: Asegura que el loader se oculte al cargar
-    Utilidades.toggleCargando(false);
-};
+    // --- EJECUCIÓN INICIAL AL FINAL ---
+    inicializarApp();
 });
