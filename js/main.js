@@ -19,6 +19,10 @@ document.addEventListener('DOMContentLoaded', () => {
     'pantalla-finalizado'
   ];
 
+  // Estado del bloque de lectura actual
+  let bloqueActual = 1;
+  const TOTAL_BLOQUES = 5;
+
   /**
    * Cambia la visibilidad de las pantallas en la SPA de forma segura.
    * @param {string} idPantalla - ID de la sección a mostrar.
@@ -30,7 +34,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (id === idPantalla) {
           el.classList.remove('oculta', 'd-none');
           el.classList.add('activa');
-          el.style.display = 'block'; // Forzado explícito para evitar bloqueos CSS
+          el.style.display = 'block';
         } else {
           el.classList.remove('activa');
           el.classList.add('oculta');
@@ -52,7 +56,6 @@ document.addEventListener('DOMContentLoaded', () => {
       EvaluacionUI.renderizarPreguntas();
     }
 
-    // Ajuste/re-inicialización del canvas al visibilizar la pantalla de firma
     if (idPantalla === 'pantalla-firma' && typeof FirmaDigital !== 'undefined') {
       try {
         FirmaDigital.inicializar('canvas-firma');
@@ -127,7 +130,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (tieneErrores) return;
 
-        // Deshabilitar temporalmente el botón para prevenir dobles envíos
         if (btnSubmit) btnSubmit.disabled = true;
         if (typeof Utilidades !== 'undefined') Utilidades.toggleCargando(true, 'Verificando registro previo...');
 
@@ -166,6 +168,90 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
+  /**
+   * PANTALLA 3: NAVEGACIÓN DE LECTURA POR BLOQUES (LA FUNCIÓN QUE FALTABA)
+   */
+  function configurarLectura() {
+    const btnContinuar = document.getElementById('btn-lectura-continuar');
+    const btnAnterior = document.getElementById('btn-lectura-anterior');
+
+    if (btnContinuar) {
+      btnContinuar.addEventListener('click', (e) => {
+        e.preventDefault();
+
+        if (bloqueActual < TOTAL_BLOQUES) {
+          // Ocultar bloque actual
+          const elActual = document.getElementById(`bloque-${bloqueActual}`);
+          if (elActual) {
+            elActual.classList.add('oculta');
+            elActual.style.display = 'none';
+          }
+
+          bloqueActual++;
+
+          // Mostrar bloque siguiente
+          const elSiguiente = document.getElementById(`bloque-${bloqueActual}`);
+          if (elSiguiente) {
+            elSiguiente.classList.remove('oculta');
+            elSiguiente.style.display = 'block';
+          }
+
+          actualizarNavegacionLectura();
+        } else {
+          // Al superar el bloque 5, pasa al examen
+          mostrarPantalla('pantalla-examen');
+        }
+      });
+    }
+
+    if (btnAnterior) {
+      btnAnterior.addEventListener('click', (e) => {
+        e.preventDefault();
+
+        if (bloqueActual > 1) {
+          const elActual = document.getElementById(`bloque-${bloqueActual}`);
+          if (elActual) {
+            elActual.classList.add('oculta');
+            elActual.style.display = 'none';
+          }
+
+          bloqueActual--;
+
+          const elAnterior = document.getElementById(`bloque-${bloqueActual}`);
+          if (elAnterior) {
+            elAnterior.classList.remove('oculta');
+            elAnterior.style.display = 'block';
+          }
+
+          actualizarNavegacionLectura();
+        }
+      });
+    }
+  }
+
+  function actualizarNavegacionLectura() {
+    const indicador = document.getElementById('bloque-indicador');
+    const barra = document.getElementById('lectura-barra-relleno');
+    const btnContinuar = document.getElementById('btn-lectura-continuar');
+    const btnAnterior = document.getElementById('btn-lectura-anterior');
+
+    if (indicador) {
+      indicador.textContent = `Bloque ${bloqueActual} de ${TOTAL_BLOQUES}`;
+    }
+
+    if (barra) {
+      barra.style.width = `${(bloqueActual / TOTAL_BLOQUES) * 100}%`;
+    }
+
+    if (btnAnterior) {
+      btnAnterior.disabled = (bloqueActual === 1);
+    }
+
+    if (btnContinuar) {
+      btnContinuar.textContent = (bloqueActual === TOTAL_BLOQUES) ? 'Ir a la Evaluación' : 'Continuar Lectura';
+    }
+  }
+
   function configurarEventosGenerales() {
     window.addEventListener('cambioDePantalla', (e) => {
       if (e.detail && e.detail.pantalla) {
@@ -173,7 +259,6 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
 
-    // Respaldo global por si el botón de bienvenida se clickea antes de enlazar su evento directo
     document.addEventListener('click', (e) => {
       if (e.target && e.target.closest('#btn-iniciar-capacitacion')) {
         e.preventDefault();
@@ -308,9 +393,9 @@ document.addEventListener('DOMContentLoaded', () => {
       btnReiniciar.onclick = (e) => {
         e.preventDefault();
 
+        bloqueActual = 1;
         if (typeof GestorProgreso !== 'undefined') GestorProgreso.reiniciar();
 
-        // Limpieza del formulario y checkboxes al reiniciar la SPA
         const formRegistro = document.getElementById('form-datos-empleado');
         if (formRegistro) formRegistro.reset();
 
@@ -333,31 +418,28 @@ document.addEventListener('DOMContentLoaded', () => {
    * INICIALIZACIÓN SEGURA DE LA APLICACIÓN
    */
   function inicializarApp() {
-    // 1. Configurar eventos principales de forma aislada
-    try { configurarBienvenida(); } catch (e) { console.error('Error al configurar bienvenida:', e); }
-    try { configurarFormularioRegistro(); } catch (e) { console.error('Error al configurar formulario:', e); }
-    try { configurarEventosGenerales(); } catch (e) { console.error('Error al configurar eventos generales:', e); }
-    try { configurarConfirmaciones(); } catch (e) { console.error('Error al configurar confirmaciones:', e); }
-    try { configurarFirma(); } catch (e) { console.error('Error al configurar firma:', e); }
+    try { configurarBienvenida(); } catch (e) { console.error('Error en bienvenida:', e); }
+    try { configurarFormularioRegistro(); } catch (e) { console.error('Error en formulario:', e); }
+    try { configurarLectura(); } catch (e) { console.error('Error en lectura:', e); }
+    try { configurarEventosGenerales(); } catch (e) { console.error('Error en eventos generales:', e); }
+    try { configurarConfirmaciones(); } catch (e) { console.error('Error en confirmaciones:', e); }
+    try { configurarFirma(); } catch (e) { console.error('Error en firma:', e); }
 
-    // 2. Intentar inicialización previa de firma si ya existe en el DOM
     if (typeof FirmaDigital !== 'undefined') {
       try {
         FirmaDigital.inicializar('canvas-firma');
       } catch (err) {
-        console.warn('No se pudo inicializar el canvas de firma al arrancar:', err);
+        console.warn('No se pudo inicializar canvas al arrancar:', err);
       }
     }
 
-    // 3. Forzar el estado visible de la pantalla inicial
     mostrarPantalla('pantalla-bienvenida');
 
-    // 4. Ocultar cargador explícitamente
     if (typeof Utilidades !== 'undefined') {
       Utilidades.toggleCargando(false);
     }
   }
 
-  // Ejecutar inicio
+  // Arrancar aplicación
   inicializarApp();
 });
