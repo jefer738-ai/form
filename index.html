@@ -61,7 +61,7 @@
     .option-item input { margin-right: 10px; }
 
     /* CANVAS DE FIRMA */
-    canvas { width: 100%; height: 180px; border: 2px dashed var(--border); border-radius: 8px; background: #fafafa; cursor: crosshair; touch-action: none; }
+    canvas { width: 100%; height: 180px; border: 2px dashed var(--border); border-radius: 8px; background: #ffffff; cursor: crosshair; touch-action: none; }
 
     /* ESTILOS DE IMPRESIÓN (PDF) */
     @media print {
@@ -121,7 +121,7 @@
         <div class="bloque-content" id="bloque-4" style="display:none;">
           <h3>4. Manejo de Información y Confidencialidad</h3>
           <p>Toda la información operativa, comercial y de clientes tiene carácter confidencial y debe ser resguardada.</p>
-          <p>Queda estrictamente prohibido compartir credenciales de acceso o extraer archivos no autorizados.</p>
+          <p>Queda strictly prohibido compartir credenciales de acceso o extraer archivos no autorizados.</p>
         </div>
         <div class="bloque-content" id="bloque-5" style="display:none;">
           <h3>5. Compromiso Operativo</h3>
@@ -187,12 +187,12 @@
 <script>
 /**
  * ============================================================================
- * LÓGICA PRINCIPAL UNIFICADA (SINGLE FILE ARCHITECTURE)
+ * LÓGICA PRINCIPAL UNIFICADA CONECTADA A TU CODE.GS
  * ============================================================================
  */
 
-// ⚠️ REEMPLAZA ESTA URL CON LA DE TU GOOGLE APPS SCRIPT
-const GOOGLE_SHEETS_URL = "TU_WEB_APP_URL_AQUI";
+// ⚠️ URL DE TU GOOGLE APPS SCRIPT
+const GOOGLE_SHEETS_URL = "https://script.google.com/macros/s/AKfycbyOYplzv7m1iVg_kRobOXyF6JJgokksPwjt5lrW74HaBJ38BdTg98VPe7SsuzCh5PtL/exec";
 
 // BANCO GENERAL DE PREGUNTAS
 const BANCO_PREGUNTAS = [
@@ -228,14 +228,15 @@ const BANCO_PREGUNTAS = [
   }
 ];
 
-// ESTADO GLOBAL DE LA APLICACIÓN
+// ESTADO GLOBAL
 let usuario = { nombre: '', correo: '' };
 let bloqueActual = 1;
 const TOTAL_BLOQUES = 5;
 let preguntasActuales = [];
 let idsPreguntasAnteriores = [];
+let intentosQuiz = 1;
+let erroresQuiz = 0;
 
-// DOCUMENT READY
 document.addEventListener('DOMContentLoaded', () => {
 
   /* --------------------------------------------------------------------------
@@ -260,7 +261,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   /* --------------------------------------------------------------------------
-     PASO 2: LECTURA EN BLOQUES (NAVEGACIÓN LIBRE)
+     PASO 2: LECTURA EN BLOQUES
      -------------------------------------------------------------------------- */
   const btnPrev = document.getElementById('btn-prev');
   const btnNext = document.getElementById('btn-next');
@@ -297,18 +298,15 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   /* --------------------------------------------------------------------------
-     PASO 3: SELECCIÓN Y EVALUACIÓN DE EXACTAMENTE 2 PREGUNTAS ALEATORIAS
+     PASO 3: PREGUNTAS ALEATORIAS
      -------------------------------------------------------------------------- */
   function generarPreguntasAleatorias() {
-    // Evita repetir exactamente el mismo par del intento fallido inmediatamente anterior
     let disponibles = BANCO_PREGUNTAS.filter(p => !idsPreguntasAnteriores.includes(p.id));
     if (disponibles.length < 2) disponibles = BANCO_PREGUNTAS;
 
-    // Selecciona EXACTAMENTE 2 preguntas al azar
     preguntasActuales = [...disponibles].sort(() => 0.5 - Math.random()).slice(0, 2);
     idsPreguntasAnteriores = preguntasActuales.map(p => p.id);
 
-    // Renderiza ÚNICAMENTE las 2 preguntas
     const container = document.getElementById('contenedor-preguntas');
     container.innerHTML = '';
 
@@ -345,13 +343,15 @@ document.addEventListener('DOMContentLoaded', () => {
       cambiarPaso(4);
       inicializarCanvasFirma();
     } else {
+      intentosQuiz++;
+      erroresQuiz++;
       mostrarAlerta('alert-quiz', true);
-      generarPreguntasAleatorias(); // Carga 2 preguntas completamente nuevas para el reintento
+      generarPreguntasAleatorias();
     }
   });
 
   /* --------------------------------------------------------------------------
-     PASO 4: FIRMA DIGITAL (TACTIL + MOUSE)
+     PASO 4: FIRMA DIGITAL
      -------------------------------------------------------------------------- */
   const canvas = document.getElementById('canvas-firma');
   const ctx = canvas.getContext('2d');
@@ -361,6 +361,11 @@ document.addEventListener('DOMContentLoaded', () => {
   function inicializarCanvasFirma() {
     canvas.width = canvas.offsetWidth;
     canvas.height = canvas.offsetHeight;
+    
+    // Fondo blanco indispensable para formato JPG
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    
     ctx.lineWidth = 2.5;
     ctx.lineCap = 'round';
     ctx.strokeStyle = '#0f172a';
@@ -405,12 +410,13 @@ document.addEventListener('DOMContentLoaded', () => {
   canvas.addEventListener('touchend', detenerDibujo);
 
   document.getElementById('btn-limpiar-firma').addEventListener('click', () => {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
     firmaTrazada = false;
   });
 
   /* --------------------------------------------------------------------------
-     GUARDADO Y ENVÍO A GOOGLE SHEETS
+     GUARDADO COMPATIBLE CON TU CODE.GS
      -------------------------------------------------------------------------- */
   document.getElementById('btn-guardar').addEventListener('click', async () => {
     if (!firmaTrazada) {
@@ -423,25 +429,36 @@ document.addEventListener('DOMContentLoaded', () => {
     btn.textContent = 'Enviando...';
 
     const fechaActual = new Date();
+    
+    // Firma comprimida a JPG 0.3 para asegurar espacio en celda de Google Sheets
+    const firmaComprimida = canvas.toDataURL('image/jpeg', 0.3);
+
+    // ESTRUCTURA COMPLETA ESPERADA POR TU CODE.GS
     const payload = {
+      action: "registrar",
       nombre: usuario.nombre,
       correo: usuario.correo,
       fecha: fechaActual.toLocaleDateString('es-CO'),
       hora: fechaActual.toLocaleTimeString('es-CO'),
-      firmaBase64: canvas.toDataURL()
+      tiempoLectura: "Completado",
+      intentos: intentosQuiz,
+      errores: erroresQuiz,
+      checkLectura: true,
+      checkComprension: true,
+      firmaBase64: firmaComprimida,
+      navegador: navigator.userAgent.substring(0, 50),
+      entorno: /Mobi|Android/i.test(navigator.userAgent) ? 'Móvil' : 'Escritorio'
     };
 
     try {
-      if (GOOGLE_SHEETS_URL && GOOGLE_SHEETS_URL !== "https://script.google.com/macros/s/AKfycbyOYplzv7m1iVg_kRobOXyF6JJgokksPwjt5lrW74HaBJ38BdTg98VPe7SsuzCh5PtL/exec") {
-        await fetch(GOOGLE_SHEETS_URL, {
-          method: 'POST',
-          mode: 'no-cors',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload)
-        });
-      }
+      await fetch(GOOGLE_SHEETS_URL, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify(payload)
+      });
     } catch (err) {
-      console.error('Error al enviar datos:', err);
+      console.error('Error enviando a Google Sheets:', err);
     }
 
     document.getElementById('resumen-nombre').textContent = payload.nombre;
@@ -452,7 +469,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   /* --------------------------------------------------------------------------
-     UTILIDADES GENERALES
+     UTILIDADES
      -------------------------------------------------------------------------- */
   function cambiarPaso(paso) {
     document.querySelectorAll('.step').forEach(el => el.classList.remove('active'));
