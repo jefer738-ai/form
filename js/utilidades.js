@@ -105,6 +105,7 @@ const Utilidades = (() => {
 
     /**
      * Muestra u oculta el overlay global de carga con un mensaje personalizado.
+     * Incluye control directo de propiedad 'display' para evitar bloqueos por especificidad CSS.
      * @param {boolean} mostrar - True para mostrar, False para ocultar.
      * @param {string} [mensaje="Procesando información..."] - Mensaje a desplegar.
      */
@@ -119,9 +120,11 @@ const Utilidades = (() => {
         }
 
         if (mostrar) {
-            overlay.classList.remove('d-none');
+            overlay.classList.remove('d-none', 'hidden');
+            overlay.style.setProperty('display', 'flex', 'important');
         } else {
-            overlay.classList.add('d-none');
+            overlay.classList.add('d-none', 'hidden');
+            overlay.style.setProperty('display', 'none', 'important');
         }
     };
 
