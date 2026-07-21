@@ -119,9 +119,9 @@ const Utilidades = (() => {
         }
 
         if (mostrar) {
-            overlay.classList.remove('hidden');
+            overlay.classList.remove('d-none');
         } else {
-            overlay.classList.add('hidden');
+            overlay.classList.add('d-none');
         }
     };
 
