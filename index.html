@@ -33,7 +33,7 @@
     .form-group { margin-bottom: 16px; }
     label { display: block; font-weight: 600; font-size: 0.875rem; margin-bottom: 6px; }
     input[type="text"], input[type="email"] { width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: 8px; font-size: 1rem; outline: none; }
-    input:focus { border-color: var(--primary); ring: 2px var(--primary); }
+    input:focus { border-color: var(--primary); }
 
     /* BOTONES */
     .btn-group { display: flex; gap: 10px; margin-top: 20px; }
@@ -56,7 +56,7 @@
     .alert-danger { background: #fef2f2; color: #991b1b; border: 1px solid #fecaca; }
     .alert-success { background: #ecfdf5; color: #065f46; border: 1px solid #a7f3d0; }
 
-    /* OPIONES DE PREGUNTAS */
+    /* OPCIONES DE PREGUNTAS */
     .option-item { display: block; padding: 12px; border: 1px solid var(--border); border-radius: 8px; margin-bottom: 8px; cursor: pointer; }
     .option-item input { margin-right: 10px; }
 
@@ -79,8 +79,8 @@
     <!-- PASO 1: REGISTRO DIRECTO -->
     <div id="step-1" class="step active">
       <h2>Registro de Inducción</h2>
-      <p>Ingresa tus datos para dar inicio a la lectura del material.</p>
-      <div id="alert-step-1" class="alert alert-danger">Por favor completa todos los campos correctamente.</div>
+      <p>Ingresa tus datos para iniciar la lectura del material.</p>
+      <div id="alert-step-1" class="alert alert-danger">Por favor completa todos los campos requeridos.</div>
       
       <form id="form-registro">
         <div class="form-group">
@@ -103,7 +103,6 @@
       <div class="progress-bar"><div id="progress-fill" class="progress-fill"></div></div>
 
       <div id="contenido-lectura">
-        <!-- Contenidos dinámicos -->
         <div class="bloque-content" id="bloque-1">
           <h3>1. Introducción y Normativa</h3>
           <p>Bienvenido al módulo de inducción. En esta sección revisaremos los lineamientos generales de seguridad y convivencia dentro de la organización.</p>
@@ -136,7 +135,7 @@
       </div>
     </div>
 
-    <!-- PASO 3: EVALUACIÓN ALEATORIA -->
+    <!-- PASO 3: EVALUACIÓN ALEATORIA (2 PREGUNTAS) -->
     <div id="step-3" class="step">
       <h2>Evaluación de Comprensión</h2>
       <p>Responde correctamente las siguientes 2 preguntas para proceder con tu firma.</p>
@@ -159,7 +158,7 @@
       <label>Dibuja tu firma a continuación:</label>
       <canvas id="canvas-firma"></canvas>
       
-      <button type="button" id="btn-limpiar-firma" class="btn btn-secondary" style="margin-top: 8px; padding: 6px; font-size: 0.8rem;">Borrar Firma</button>
+      <button type="button" id="btn-limpiar-firma" class="btn btn-secondary" style="margin-top: 8px; padding: 6px 12px; font-size: 0.8rem;">Borrar Firma</button>
 
       <div class="btn-group">
         <button type="button" id="btn-guardar" class="btn btn-primary">Finalizar Registro</button>
@@ -193,9 +192,9 @@
  */
 
 // ⚠️ REEMPLAZA ESTA URL CON LA DE TU GOOGLE APPS SCRIPT
-const GOOGLE_SHEETS_URL = "https://script.google.com/macros/s/AKfycbyOYplzv7m1iVg_kRobOXyF6JJgokksPwjt5lrW74HaBJ38BdTg98VPe7SsuzCh5PtL/exec";
+const GOOGLE_SHEETS_URL = "TU_WEB_APP_URL_AQUI";
 
-// BANCO DE PREGUNTAS (Permite seleccionar parejas aleatorias sin repetir en el fallo)
+// BANCO GENERAL DE PREGUNTAS
 const BANCO_PREGUNTAS = [
   {
     id: 1,
@@ -206,13 +205,13 @@ const BANCO_PREGUNTAS = [
   {
     id: 2,
     pregunta: "¿A quién se debe reportar una condición de riesgo?",
-    opciones: ["Al supervisor directo o área de SST", "A un compañero de otro departamento", "A nadie, no es importante"],
+    opciones: ["Al supervisor directo o área de SST", "A un compañero de otro departamento", "A nadie"],
     correcta: 0
   },
   {
     id: 3,
     pregunta: "¿Cuál es la política respecto a la información de la empresa?",
-    opciones: ["Es pública", "Es confidencial y debe resguardarse", "Se puede compartir en redes sociales"],
+    opciones: ["Es pública", "Es confidencial y debe resguardarse", "Se puede compartir en redes"],
     correcta: 1
   },
   {
@@ -220,6 +219,12 @@ const BANCO_PREGUNTAS = [
     pregunta: "¿Qué conducta se promueve en la interacción diaria?",
     opciones: ["Competencia agresiva", "Respeto, inclusión y transparencia", "Trabajo individual aislado"],
     correcta: 1
+  },
+  {
+    id: 5,
+    pregunta: "¿Qué acción se debe tomar durante una evacuación?",
+    opciones: ["Seguir las rutas marcadas y mantener la calma", "Usar los ascensores", "Esperar en la oficina"],
+    correcta: 0
   }
 ];
 
@@ -272,7 +277,6 @@ document.addEventListener('DOMContentLoaded', () => {
       bloqueActual++;
       actualizarLectura();
     } else {
-      // Pasar a la evaluación
       generarPreguntasAleatorias();
       cambiarPaso(3);
     }
@@ -293,18 +297,18 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   /* --------------------------------------------------------------------------
-     PASO 3: EVALUACIÓN ALEATORIA
+     PASO 3: SELECCIÓN Y EVALUACIÓN DE EXACTAMENTE 2 PREGUNTAS ALEATORIAS
      -------------------------------------------------------------------------- */
   function generarPreguntasAleatorias() {
-    // Filtrar para no repetir las preguntas anteriores en un reintento si es posible
+    // Evita repetir exactamente el mismo par del intento fallido inmediatamente anterior
     let disponibles = BANCO_PREGUNTAS.filter(p => !idsPreguntasAnteriores.includes(p.id));
-    if (disponibles.length < 2) disponibles = BANCO_PREGUNTAS; // Fallback
+    if (disponibles.length < 2) disponibles = BANCO_PREGUNTAS;
 
-    // Ordenar aleatoriamente y tomar 2
+    // Selecciona EXACTAMENTE 2 preguntas al azar
     preguntasActuales = [...disponibles].sort(() => 0.5 - Math.random()).slice(0, 2);
     idsPreguntasAnteriores = preguntasActuales.map(p => p.id);
 
-    // Renderizar HTML de preguntas
+    // Renderiza ÚNICAMENTE las 2 preguntas
     const container = document.getElementById('contenedor-preguntas');
     container.innerHTML = '';
 
@@ -319,7 +323,7 @@ document.addEventListener('DOMContentLoaded', () => {
         </label>
       `).join('');
 
-      div.innerHTML = `<label style="font-size:1rem;">${index + 1}. ${q.pregunta}</label>${opcionesHTML}`;
+      div.innerHTML = `<label style="font-size:1rem; font-weight:600; display:block; margin-bottom:8px;">${index + 1}. ${q.pregunta}</label>${opcionesHTML}`;
       container.appendChild(div);
     });
   }
@@ -342,7 +346,7 @@ document.addEventListener('DOMContentLoaded', () => {
       inicializarCanvasFirma();
     } else {
       mostrarAlerta('alert-quiz', true);
-      generarPreguntasAleatorias(); // Genera 2 distintas para el nuevo intento
+      generarPreguntasAleatorias(); // Carga 2 preguntas completamente nuevas para el reintento
     }
   });
 
@@ -355,7 +359,6 @@ document.addEventListener('DOMContentLoaded', () => {
   let firmaTrazada = false;
 
   function inicializarCanvasFirma() {
-    // Ajustar resolución real del canvas
     canvas.width = canvas.offsetWidth;
     canvas.height = canvas.offsetHeight;
     ctx.lineWidth = 2.5;
@@ -393,7 +396,6 @@ document.addEventListener('DOMContentLoaded', () => {
     dibujando = false;
   }
 
-  // Eventos Mouse y Táctil
   canvas.addEventListener('mousedown', empezarDibujo);
   canvas.addEventListener('mousemove', dibujar);
   window.addEventListener('mouseup', detenerDibujo);
@@ -429,9 +431,8 @@ document.addEventListener('DOMContentLoaded', () => {
       firmaBase64: canvas.toDataURL()
     };
 
-    // Envío asíncrono a Google Sheets
     try {
-      if (GOOGLE_SHEETS_URL && GOOGLE_SHEETS_URL !== "TU_WEB_APP_URL_AQUI") {
+      if (GOOGLE_SHEETS_URL && GOOGLE_SHEETS_URL !== "https://script.google.com/macros/s/AKfycbyOYplzv7m1iVg_kRobOXyF6JJgokksPwjt5lrW74HaBJ38BdTg98VPe7SsuzCh5PtL/exec") {
         await fetch(GOOGLE_SHEETS_URL, {
           method: 'POST',
           mode: 'no-cors',
@@ -443,7 +444,6 @@ document.addEventListener('DOMContentLoaded', () => {
       console.error('Error al enviar datos:', err);
     }
 
-    // Mostrar Resumen Final
     document.getElementById('resumen-nombre').textContent = payload.nombre;
     document.getElementById('resumen-correo').textContent = payload.correo;
     document.getElementById('resumen-fecha').textContent = `${payload.fecha} - ${payload.hora}`;
