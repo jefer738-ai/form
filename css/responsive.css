@@ -1,0 +1,101 @@
+/* ==========================================================================
+   DISEÑO ADAPTATIVO (RESPONSIVE DESIGN - MEDIA QUERIES)
+   ========================================================================== */
+
+/* Tablets y Pantallas Medianas (<= 768px) */
+@media screen and (max-width: 768px) {
+    .header-container {
+        padding: 0.85rem 1rem;
+    }
+
+    .main-container {
+        margin: 1rem auto;
+        padding: 0 1rem;
+    }
+
+    .card-pantalla {
+        padding: 1.5rem;
+        border-radius: var(--border-radius-md);
+    }
+
+    .card-titulo {
+        font-size: 1.4rem;
+    }
+
+    .card-subtitulo {
+        font-size: 0.9rem;
+    }
+
+    .lectura-cuerpo {
+        padding: 1.25rem;
+    }
+
+    .bloque-titulo {
+        font-size: 1.15rem;
+    }
+
+    .card-footer {
+        flex-direction: column-reverse;
+        gap: 0.75rem;
+    }
+
+    .card-footer .btn {
+        width: 100%;
+    }
+
+    .footer-espaciado {
+        flex-direction: column-reverse;
+    }
+
+    .footer-espaciado > div {
+        display: none; /* Oculta el div vaciador en layout de columna */
+    }
+
+    .firma-pad-wrapper {
+        height: 200px;
+    }
+
+    .firma-watermark {
+        font-size: 1.5rem;
+    }
+}
+
+/* Celulares Pequeños (<= 480px) */
+@media screen and (max-width: 480px) {
+    .logo-text {
+        font-size: 1rem;
+    }
+
+    .header-title {
+        display: none; /* Ahorra espacio en la cabecera móvil */
+    }
+
+    .header-separator {
+        display: none;
+    }
+
+    .progreso-info {
+        font-size: 0.75rem;
+    }
+
+    .lectura-meta {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .pregunta-card {
+        padding: 1rem;
+    }
+
+    .opcion-label {
+        padding: 0.75rem;
+    }
+
+    .opcion-texto {
+        font-size: 0.875rem;
+    }
+
+    .firma-pad-wrapper {
+        height: 180px;
+    }
+}
