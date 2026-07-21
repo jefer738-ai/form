@@ -277,4 +277,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Ejecutar la aplicación
     inicializarApp();
+    const inicializarApp = () => {
+    configurarNavegacionPasoAPaso();
+    configurarFormularioRegistro();
+    configurarLectorCapacitacion();
+    configurarEvaluacionEventos();
+    configurarFirmaEventos();
+
+    // Inicializar Canvas de firma
+    FirmaDigital.inicializar('canvas-firma');
+
+    // Restaurar estado si existía una sesión previa
+    const estadoActual = GestorProgreso.obtenerEstado();
+    mostrarPaso(estadoActual.pasoActual || 1);
+
+    // AGREGAR ESTA LÍNEA: Asegura que el loader se oculte al cargar
+    Utilidades.toggleCargando(false);
+};
 });
