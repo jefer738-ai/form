@@ -1,0 +1,136 @@
+/* ==========================================================================
+   ESTILOS DE LA EVALUACIÓN Y PREGUNTAS DINÁMICAS
+   ========================================================================== */
+.examen-meta {
+    display: flex;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+}
+
+.badge-examen {
+    background-color: var(--color-primary-light);
+    color: var(--color-primary);
+    font-size: 0.8rem;
+    font-weight: 700;
+    padding: 0.35rem 0.75rem;
+    border-radius: var(--border-radius-sm);
+}
+
+.badge-errores {
+    background-color: var(--color-danger-bg);
+    color: var(--color-danger);
+    font-size: 0.8rem;
+    font-weight: 700;
+    padding: 0.35rem 0.75rem;
+    border-radius: var(--border-radius-sm);
+}
+
+/* Contenedor de preguntas */
+.examen-cuerpo {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+.preguntas-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 1.75rem;
+}
+
+.pregunta-card {
+    background-color: var(--color-bg-subtle);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-md);
+    padding: 1.5rem;
+    transition: border-color var(--transition-fast);
+}
+
+.pregunta-card:focus-within {
+    border-color: var(--color-primary);
+}
+
+.pregunta-encabezado {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--color-text-main);
+    margin-bottom: 1.25rem;
+    display: flex;
+    gap: 0.5rem;
+}
+
+.pregunta-numero {
+    color: var(--color-primary);
+}
+
+/* Opciones de respuesta estilo Radio Cards Fluent UI */
+.opciones-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.opcion-label {
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
+    padding: 0.85rem 1.1rem;
+    background-color: var(--color-bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-sm);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    user-select: none;
+}
+
+.opcion-label:hover {
+    background-color: var(--color-primary-light);
+    border-color: var(--color-primary);
+}
+
+.opcion-input {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 20px;
+    height: 20px;
+    border: 2px solid #8A8886;
+    border-radius: 50%;
+    outline: none;
+    display: grid;
+    place-content: center;
+    margin: 0;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: all var(--transition-fast);
+}
+
+.opcion-input::before {
+    content: "";
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    transform: scale(0);
+    transition: 0.12s transform ease-in-out;
+    background-color: var(--color-primary);
+}
+
+.opcion-input:checked {
+    border-color: var(--color-primary);
+}
+
+.opcion-input:checked::before {
+    transform: scale(1);
+}
+
+.opcion-label:has(.opcion-input:checked) {
+    background-color: var(--color-primary-light);
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 1px var(--color-primary);
+}
+
+.opcion-texto {
+    font-size: 0.95rem;
+    color: var(--color-text-main);
+    line-height: 1.4;
+}
