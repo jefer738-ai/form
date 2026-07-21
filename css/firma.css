@@ -1,0 +1,146 @@
+/* ==========================================================================
+   ESTILOS DE CONFIRMACIONES (CHECKS) Y PAD DE FIRMA DIGITAL
+   ========================================================================== */
+
+/* Seccion Confirmaciones (Checks) */
+.confirmaciones-cuerpo {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+    max-width: 750px;
+    margin: 0 auto;
+}
+
+.check-box-item {
+    background-color: var(--color-bg-subtle);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-md);
+    padding: 1.25rem;
+    transition: border-color var(--transition-fast);
+}
+
+.check-box-item:hover {
+    border-color: var(--color-primary);
+}
+
+.custom-checkbox-label {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.85rem;
+    cursor: pointer;
+    user-select: none;
+}
+
+.custom-checkbox-input {
+    position: absolute;
+    opacity: 0;
+    cursor: pointer;
+    height: 0;
+    width: 0;
+}
+
+.custom-checkbox-box {
+    width: 22px;
+    height: 22px;
+    background-color: var(--color-bg-card);
+    border: 2px solid #8A8886;
+    border-radius: var(--border-radius-sm);
+    flex-shrink: 0;
+    margin-top: 2px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all var(--transition-fast);
+}
+
+.custom-checkbox-box::after {
+    content: "✓";
+    font-weight: 800;
+    font-size: 0.9rem;
+    color: var(--color-bg-card);
+    display: none;
+}
+
+.custom-checkbox-input:checked ~ .custom-checkbox-box {
+    background-color: var(--color-primary);
+    border-color: var(--color-primary);
+}
+
+.custom-checkbox-input:checked ~ .custom-checkbox-box::after {
+    display: block;
+}
+
+.custom-checkbox-texto {
+    font-size: 0.95rem;
+    color: var(--color-text-main);
+    line-height: 1.5;
+}
+
+/* Seccion Pad de Firma */
+.firma-cuerpo {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.5rem;
+}
+
+.firma-instrucciones {
+    text-align: center;
+    color: var(--color-text-muted);
+    font-size: 0.95rem;
+}
+
+.firma-pad-wrapper {
+    position: relative;
+    width: 100%;
+    max-width: 600px;
+    height: 250px;
+    background-color: #FFFFFF;
+    border: 2px dashed #8A8886;
+    border-radius: var(--border-radius-md);
+    overflow: hidden;
+    touch-action: none; /* Evita el scroll mientras se firma con el dedo */
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.firma-canvas {
+    width: 100%;
+    height: 100%;
+    display: block;
+    cursor: crosshair;
+    position: relative;
+    z-index: 2;
+}
+
+.firma-linea-guia {
+    position: absolute;
+    bottom: 40px;
+    left: 10%;
+    width: 80%;
+    height: 1px;
+    border-bottom: 2px dashed var(--color-text-light);
+    z-index: 1;
+    pointer-events: none;
+}
+
+.firma-watermark {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 2rem;
+    font-weight: 700;
+    color: rgba(0, 0, 0, 0.04);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    pointer-events: none;
+    z-index: 1;
+    user-select: none;
+}
+
+.firma-controles {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    width: 100%;
+}
