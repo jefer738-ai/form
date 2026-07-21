@@ -20,21 +20,6 @@ document.addEventListener('DOMContentLoaded', () => {
     /**
      * Inicializa la aplicación y configura los escuchadores globales.
      */
-    const inicializarApp = () => {
-        configurarNavegacionPasoAPaso();
-        configurarFormularioRegistro();
-        configurarLectorCapacitacion();
-        configurarEvaluacionEventos();
-        configurarFirmaEventos();
-
-        // Inicializar Canvas de firma
-        FirmaDigital.inicializar('canvas-firma');
-
-        // Restaurar estado si existía una sesión previa
-        const estadoActual = GestorProgreso.obtenerEstado();
-        mostrarPaso(estadoActual.pasoActual || 1);
-    };
-
     /**
      * Cambia la visibilidad de las pantallas según el paso especificado.
      * @param {number} numeroPaso - Paso del 1 al 5.
