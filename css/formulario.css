@@ -1,0 +1,92 @@
+/* ==========================================================================
+   ESTILOS ESPECÍFICOS DEL FORMULARIO DE REGISTRO
+   ========================================================================== */
+.formulario-corporativo {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    max-width: 650px;
+    margin: 0 auto;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.form-label {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--color-text-main);
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.required {
+    color: var(--color-danger);
+    font-weight: 700;
+}
+
+/* Inputs de texto y correo estilo Microsoft Fluent UI */
+.form-input {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    font-size: 1rem;
+    font-family: inherit;
+    color: var(--color-text-main);
+    background-color: var(--color-bg-card);
+    border: 1px solid #8A8886;
+    border-radius: var(--border-radius-sm);
+    transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.form-input::placeholder {
+    color: var(--color-text-light);
+}
+
+.form-input:hover:not(:disabled):not(:focus) {
+    border-color: #323130;
+}
+
+.form-input:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 1px var(--color-primary);
+}
+
+.form-input:disabled {
+    background-color: var(--color-bg-subtle);
+    color: var(--color-text-light);
+    border-color: var(--border-color);
+    cursor: not-allowed;
+}
+
+/* Estado de Error en los inputs */
+.form-input.input-error {
+    border-color: var(--color-danger);
+    box-shadow: 0 0 0 1px var(--color-danger);
+    background-color: #FFF8F8;
+}
+
+.form-input.input-error:focus {
+    border-color: var(--color-danger);
+    box-shadow: 0 0 0 2px var(--color-danger);
+}
+
+/* Mensajes de validación bajo cada input */
+.form-error {
+    font-size: 0.85rem;
+    color: var(--color-danger);
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    margin-top: 0.15rem;
+}
+
+.form-error::before {
+    content: "⚠️";
+    font-size: 0.75rem;
+}
