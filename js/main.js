@@ -5,25 +5,46 @@
  * ============================================================================
  */
 
-document.addEventListener('DOMContentLoaded', () => {
+/**
+ * ============================================================================
+ * CONTROLADOR PRINCIPAL Y FLUJO DE APLICACIÓN
+ * Plataforma Corporativa de Capacitación - Conecta Carga
+ * ============================================================================
+ */
+
+(() => {
     'use strict';
 
-    // Referencias a las vistas/pasos en el DOM
-    const pasos = {
-        1: document.getElementById('paso-registro'),
-        2: document.getElementById('paso-lectura'),
-        3: document.getElementById('paso-evaluacion'),
-        4: document.getElementById('paso-firma'),
-        5: document.getElementById('paso-completado')
-    };
+    document.addEventListener('DOMContentLoaded', () => {
+        // Referencias a las vistas/pasos en el DOM
+        const pasos = {
+            1: document.getElementById('paso-registro'),
+            2: document.getElementById('paso-lectura'),
+            3: document.getElementById('paso-evaluacion'),
+            4: document.getElementById('paso-firma'),
+            5: document.getElementById('paso-completado')
+        };
 
-    /**
-     * Inicializa la aplicación y configura los escuchadores globales.
-     */
-    /**
-     * Cambia la visibilidad de las pantallas según el paso especificado.
-     * @param {number} numeroPaso - Paso del 1 al 5.
-     */
+        const inicializarApp = () => {
+            configurarNavegacionPasoAPaso();
+            configurarFormularioRegistro();
+            configurarLectorCapacitacion();
+            configurarEvaluacionEventos();
+            configurarFirmaEventos();
+
+            FirmaDigital.inicializar('canvas-firma');
+
+            const estadoActual = GestorProgreso.obtenerEstado();
+            mostrarPaso(estadoActual.pasoActual || 1);
+
+            Utilidades.toggleCargando(false);
+        };
+
+        // ... resto de las funciones auxiliares (mostrarPaso, configurarNavegacionPasoAPaso, etc.) ...
+
+        inicializarApp();
+    });
+})();
     const mostrarPaso = (numeroPaso) => {
         Object.keys(pasos).forEach((pKey) => {
             if (pasos[pKey]) {
@@ -259,18 +280,6 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>
         `;
     };
-
-    // Ejecutar la aplicación
-    inicializarApp();
-    const inicializarApp = () => {
-    configurarNavegacionPasoAPaso();
-    configurarFormularioRegistro();
-    configurarLectorCapacitacion();
-    configurarEvaluacionEventos();
-    configurarFirmaEventos();
-
-    // Inicializar Canvas de firma
-    FirmaDigital.inicializar('canvas-firma');
 
     // Restaurar estado si existía una sesión previa
     const estadoActual = GestorProgreso.obtenerEstado();
