@@ -1,184 +1,119 @@
 /**
  * ============================================================================
- * MÓDULO DE GESTIÓN DE ESTADO Y PROGRESO
+ * GESTOR DE PROGRESO Y TEMPORIZADORES
  * Plataforma Corporativa de Capacitación - Conecta Carga
  * ============================================================================
  */
 
-const GestorProgreso = (() => {
+const GestorProgreso = (function () {
     'use strict';
 
-    const CLAVE_LOCALSTORAGE = 'conecta_carga_capacitacion_state';
+    // Configuración general
+    const TIEMPO_REQUERIDO_SEGUNDOS = 10; // Segundos mínimos de permanencia
 
-    // Estado inicial por defecto
-    const estadoInicial = {
-        pasoActual: 1, // 1: Registro, 2: Lectura/Capacitación, 3: Evaluación, 4: Firma, 5: Completado
-        datosUsuario: {
-            nombre: '',
-            correo: ''
-        },
-        tiempoLecturaSegundos: 0,
-        lecturaCompletada: false,
-        intentosEvaluacion: 0,
-        erroresAcumulados: 0,
-        evaluacionAprobada: false,
-        comprensionAceptada: false,
-        firmaBase64: null,
-        fechaInicio: null,
-        fechaFinalizacion: null
-    };
-
-    // Objeto reactivo en memoria
-    let estado = { ...estadoInicial };
-    let intervaloTemporizador = null;
+    // Estado interno del usuario
+    let datosUsuario = { nombre: '', correo: '' };
+    let tiempoLecturaSegundos = 0;
+    let temporizadorLectura = null;
+    let intentosEvaluacion = 1;
+    let erroresAcumulados = 0;
 
     /**
-     * Inicializa o recupera el estado desde LocalStorage.
+     * Busca el botón de continuar lectura probando los IDs más comunes
      */
-    const inicializar = () => {
-        const guardado = localStorage.getItem(CLAVE_LOCALSTORAGE);
-        if (guardado) {
-            try {
-                estado = { ...estadoInicial, ...JSON.parse(guardado) };
-            } catch (e) {
-                console.warn('Error al restaurar el estado previo, iniciando desde cero.', e);
-                estado = { ...estadoInicial };
-            }
-        }
-    };
+    function obtenerBotonContinuar() {
+        return document.getElementById('btn-continuar-lectura') || 
+               document.getElementById('btn-siguiente-lectura') || 
+               document.getElementById('btn-ir-examen');
+    }
 
-    /**
-     * Sincroniza el estado actual con LocalStorage.
-     */
-    const guardarEnStorage = () => {
-        try {
-            localStorage.setItem(CLAVE_LOCALSTORAGE, JSON.stringify(estado));
-        } catch (e) {
-            console.error('No se pudo guardar el progreso en el almacenamiento local:', e);
-        }
-    };
-
-    /**
-     * Registra los datos iniciales del usuario.
-     * @param {string} nombre 
-     * @param {string} correo 
-     */
-    const establecerUsuario = (nombre, correo) => {
-        estado.datosUsuario.nombre = nombre.trim();
-        estado.datosUsuario.correo = correo.trim().toLowerCase();
-        if (!estado.fechaInicio) {
-            estado.fechaInicio = new Date().toISOString();
-        }
-        guardarEnStorage();
-    };
-
-    /**
-     * Inicia el temporizador de tiempo de lectura.
-     */
-    const iniciarTemporizadorLectura = () => {
-        if (intervaloTemporizador) return; // Evitar múltiples intervalos
-        
-        intervaloTemporizador = setInterval(() => {
-            estado.tiempoLecturaSegundos += 1;
-            
-            // Disparar un evento personalizado para actualizar el contador en la UI
-            window.dispatchEvent(new CustomEvent('tiempoLecturaActualizado', {
-                detail: { segundos: estado.tiempoLecturaSegundos }
-            }));
-
-            // Guardar en storage cada 10 segundos
-            if (estado.tiempoLecturaSegundos % 10 === 0) {
-                guardarEnStorage();
-            }
-        }, 1000);
-    };
-
-    /**
-     * Detiene el temporizador de lectura.
-     */
-    const detenerTemporizadorLectura = () => {
-        if (intervaloTemporizador) {
-            clearInterval(intervaloTemporizador);
-            intervaloTemporizador = null;
-            guardarEnStorage();
-        }
-    };
-
-    /**
-     * Incrementa los intentos de la evaluación y acumula fallos si existen.
-     * @param {boolean} fueAprobado 
-     * @param {number} erroresEnIntento 
-     */
-    const registrarIntentoEvaluacion = (fueAprobado, erroresEnIntento = 0) => {
-        estado.intentosEvaluacion += 1;
-        estado.erroresAcumulados += erroresEnIntento;
-        estado.evaluacionAprobada = fueAprobado;
-        guardarEnStorage();
-    };
-
-    /**
-     * Establece el estado de lectura completada.
-     * @param {boolean} completado 
-     */
-    const setLecturaCompletada = (completado) => {
-        estado.lecturaCompletada = completado;
-        guardarEnStorage();
-    };
-
-    /**
-     * Guarda la firma en formato Base64.
-     * @param {string} base64 
-     */
-    const guardarFirma = (base64) => {
-        estado.firmaBase64 = base64;
-        estado.comprensionAceptada = true;
-        estado.fechaFinalizacion = new Date().toISOString();
-        guardarEnStorage();
-    };
-
-    /**
-     * Cambia la pantalla/paso activo de la aplicación.
-     * @param {number} nuevoPaso 
-     */
-    const cambiarPaso = (nuevoPaso) => {
-        estado.pasoActual = nuevoPaso;
-        guardarEnStorage();
-        
-        window.dispatchEvent(new CustomEvent('cambioDePaso', {
-            detail: { paso: nuevoPaso }
-        }));
-    };
-
-    /**
-     * Obtiene una copia completa del estado actual.
-     * @returns {Object}
-     */
-    const obtenerEstado = () => {
-        return { ...estado };
-    };
-
-    /**
-     * Reinicia por completo la sesión (limpia LocalStorage).
-     */
-    const reiniciarTodo = () => {
-        detenerTemporizadorLectura();
-        estado = { ...estadoInicial };
-        localStorage.removeItem(CLAVE_LOCALSTORAGE);
-    };
-
-    // Auto-inicialización al cargar
-    inicializar();
-
-    // API Pública
     return {
-        establecerUsuario,
-        iniciarTemporizadorLectura,
-        detenerTemporizadorLectura,
-        registrarIntentoEvaluacion,
-        setLecturaCompletada,
-        guardarFirma,
-        cambiarPaso,
-        obtenerEstado,
-        reiniciarTodo
+        /**
+         * Registra los datos del empleado
+         */
+        establecerUsuario: function (nombre, correo) {
+            datosUsuario = { nombre, correo };
+        },
+
+        /**
+         * Inicia el temporizador de lectura y actualiza el estado del botón en tiempo real
+         */
+        iniciarTemporizadorLectura: function () {
+            // Detener cualquier temporizador activo previo para evitar duplicados
+            this.detenerTemporizadorLectura();
+
+            const btnContinuar = obtenerBotonContinuar();
+
+            // Deshabilitar botón inicialmente
+            if (btnContinuar) {
+                btnContinuar.disabled = true;
+                btnContinuar.classList.add('disabled');
+            }
+
+            temporizadorLectura = setInterval(() => {
+                tiempoLecturaSegundos++;
+
+                const segundosRestantes = TIEMPO_REQUERIDO_SEGUNDOS - tiempoLecturaSegundos;
+                const btn = obtenerBotonContinuar();
+
+                if (btn) {
+                    if (segundosRestantes > 0) {
+                        // Feedback visual mientras cuenta
+                        btn.textContent = `Continuar (${segundosRestantes}s)`;
+                        btn.disabled = true;
+                        btn.classList.add('disabled');
+                    } else {
+                        // Habilitar botón al cumplir el tiempo
+                        btn.disabled = false;
+                        btn.classList.remove('disabled');
+                        btn.textContent = 'Continuar a la Evaluación';
+                    }
+                }
+            }, 1000);
+        },
+
+        /**
+         * Detiene el intervalo del reloj
+         */
+        detenerTemporizadorLectura: function () {
+            if (temporizadorLectura) {
+                clearInterval(temporizadorLectura);
+                temporizadorLectura = null;
+            }
+        },
+
+        /**
+         * Incrementa e informa intentos en la evaluación
+         */
+        registrarIntento: function () {
+            intentosEvaluacion++;
+        },
+
+        registrarError: function () {
+            erroresAcumulados++;
+        },
+
+        /**
+         * Retorna todo el estado acopiado
+         */
+        obtenerEstado: function () {
+            return {
+                datosUsuario,
+                tiempoLecturaSegundos,
+                intentosEvaluacion,
+                erroresAcumulados
+            };
+        },
+
+        /**
+         * Reinicia el estado para una nueva capacitación
+         */
+        reiniciar: function () {
+            this.detenerTemporizadorLectura();
+            tiempoLecturaSegundos = 0;
+            intentosEvaluacion = 1;
+            erroresAcumulados = 0;
+            datosUsuario = { nombre: '', correo: '' };
+        }
     };
 })();
