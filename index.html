@@ -23,10 +23,11 @@
 
     <!-- ==========================================================================
          OVERLAY DE CARGA (Para peticiones asíncronas a Google Sheets)
+         Ajustado con inline style para evitar bloqueos por especificidad CSS
          ========================================================================== -->
-   <div id="loader-overlay" class="loader-overlay d-none">
-    <div id="loader-message">Procesando información...</div>
-</div>
+    <div id="loader-overlay" class="loader-overlay d-none" style="display: none !important;">
+        <div id="loader-message">Procesando información...</div>
+    </div>
 
     <!-- ==========================================================================
          CABECERA CORPORATIVA Y BARRA DE PROGRESO GLOBAL
@@ -34,7 +35,6 @@
     <header class="header-corporativo">
         <div class="header-container">
             <div class="logo-container">
-                <!-- Se utiliza un texto estilizado con fallback gráfico por si no existe logo.png en fases iniciales -->
                 <div class="logo-fallback" id="logo-wrapper">
                     <span class="logo-icon">CC</span>
                     <span class="logo-text">Conecta Carga</span>
@@ -43,7 +43,7 @@
                 <h1 class="header-title">Portal de Capacitación Interna</h1>
             </div>
 
-            <!-- Barra de Progreso (Siempre visible según requerimiento) -->
+            <!-- Barra de Progreso Global -->
             <div id="progreso-global-container" class="progreso-container" aria-label="Progreso de la capacitación">
                 <div class="progreso-info">
                     <span id="progreso-paso-texto" class="progreso-paso">Paso 1 de 7: Bienvenida</span>
@@ -127,7 +127,7 @@
                     <span id="error-correo" class="form-error oculta">Por favor, ingresa un correo corporativo válido (@conectacarga.com u oficial).</span>
                 </div>
 
-                <!-- Contenedor para mensajes de validación backend (Duplicados o errores de conexión) -->
+                <!-- Contenedor para mensajes de validación backend -->
                 <div id="alerta-formulario" class="alert-box oculta"></div>
 
                 <div class="card-footer footer-espaciado">
@@ -155,7 +155,7 @@
                 <p class="card-subtitulo">Debes permanecer en este bloque el tiempo mínimo requerido antes de continuar.</p>
             </div>
 
-            <!-- Contenedor dinámico donde contenido.js inyectará o gestionará los bloques -->
+            <!-- Contenedor dinámico de bloques -->
             <div id="contenedor-bloques-lectura" class="lectura-cuerpo">
                 
                 <!-- BLOQUE 1: INTRODUCCIÓN -->
@@ -236,19 +236,16 @@
                 <p class="card-subtitulo">Responde correctamente las 2 preguntas seleccionadas aleatoriamente del banco de evaluación. No se permiten fallos.</p>
             </div>
 
-            <!-- Contenedor donde examen.js inyectará las 2 preguntas dinámicas -->
             <form id="form-examen" class="examen-cuerpo" novalidate>
                 <div id="contenedor-preguntas" class="preguntas-wrapper">
-                    <!-- Las preguntas se generan en runtime via DOM Manipulation -->
+                    <!-- Preguntas dinámicas -->
                 </div>
 
-                <!-- Caja de retroalimentación en caso de reprobar -->
                 <div id="alerta-examen" class="alert-box alert-danger oculta" role="alert">
                     <p><strong>Has reprobado este intento.</strong> No es posible mostrar las respuestas correctas. Por política corporativa, se ha generado un nuevo cuestionario aleatorio que debes responder.</p>
                 </div>
 
                 <div class="card-footer footer-espaciado">
-                    <!-- En el examen no permitimos retroceder para evitar saltarse la validación -->
                     <div></div> 
                     <button type="submit" id="btn-calificar-examen" class="btn btn-primary btn-lg" disabled>
                         Calificar Evaluación
@@ -257,7 +254,7 @@
             </form>
         </section>
 
-        <!-- PANTALLA 5: CONFIRMACIONES LEGALES (CHECKS) -->
+        <!-- PANTALLA 5: CONFIRMACIONES LEGALES -->
         <section id="pantalla-confirmaciones" class="card-pantalla oculta" aria-labelledby="titulo-confirmaciones">
             <div class="card-header">
                 <div class="badge-exito">Evaluación Aprobada con Éxito</div>
@@ -311,7 +308,6 @@
                     <p>Dibuja tu firma sobre la línea punteada. Si no estás conforme con el trazo, puedes limpiar el panel y repetirlo antes de guardar.</p>
                 </div>
 
-                <!-- Contenedor del Pad de Firma -->
                 <div class="firma-pad-wrapper">
                     <canvas id="canvas-firma" class="firma-canvas" width="600" height="250"></canvas>
                     <div class="firma-linea-guia"></div>
@@ -337,7 +333,7 @@
             </div>
         </section>
 
-        <!-- PANTALLA 7: FINALIZADO (ÉXITO TOTAL) -->
+        <!-- PANTALLA 7: FINALIZADO -->
         <section id="pantalla-finalizado" class="card-pantalla oculta" aria-labelledby="titulo-finalizado">
             <div class="finalizado-header">
                 <div class="icono-exito-grande">✓</div>
@@ -383,21 +379,16 @@
     </footer>
 
     <!-- ==========================================================================
-         LIBRERÍAS EXTERNAS CDN (Solo Signature Pad permitido)
+         LIBRERÍAS EXTERNAS Y SCRIPTS MODULARES
          ========================================================================== -->
     <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.1.7/dist/signature_pad.umd.min.js"></script>
-
-    <!-- ==========================================================================
-         SCRIPTS MODULARES PROPIOS (Orden estricto de dependencias)
-         ========================================================================== -->
-   <!-- Módulos JavaScript (Rutas corregidas según tu estructura real) -->
-<script src="js/utilidades.js"></script>
-<script src="js/sheets.js"></script>
-<script src="js/preguntas.js"></script>
-<script src="js/progreso.js"></script>
-<script src="js/evaluacion.js"></script>
-<script src="js/firma.js"></script>
-<script src="js/main.js"></script>
+    <script src="js/utilidades.js"></script>
+    <script src="js/sheets.js"></script>
+    <script src="js/preguntas.js"></script>
+    <script src="js/progreso.js"></script>
+    <script src="js/evaluacion.js"></script>
+    <script src="js/firma.js"></script>
+    <script src="js/main.js"></script>
 
 </body>
 </html>
