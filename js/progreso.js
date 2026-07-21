@@ -8,9 +8,6 @@
 const GestorProgreso = (function () {
     'use strict';
 
-    // Configuración general
-    const TIEMPO_REQUERIDO_SEGUNDOS = 10; // Segundos mínimos de permanencia
-
     // Estado interno del usuario
     let datosUsuario = { nombre: '', correo: '' };
     let tiempoLecturaSegundos = 0;
@@ -19,12 +16,14 @@ const GestorProgreso = (function () {
     let erroresAcumulados = 0;
 
     /**
-     * Busca el botón de continuar lectura probando los IDs más comunes
+     * Captura los elementos HTML con los IDs exactos del index.html
      */
     function obtenerBotonContinuar() {
-        return document.getElementById('btn-continuar-lectura') || 
-               document.getElementById('btn-siguiente-lectura') || 
-               document.getElementById('btn-ir-examen');
+        return document.getElementById('btn-lectura-continuar');
+    }
+
+    function obtenerElementoTiempo() {
+        return document.getElementById('tiempo-restante');
     }
 
     return {
@@ -36,44 +35,60 @@ const GestorProgreso = (function () {
         },
 
         /**
-         * Inicia el temporizador de lectura y actualiza el estado del botón en tiempo real
+         * Inicia el temporizador de lectura para el bloque activo
+         * @param {number} tiempoRequerido - Segundos requeridos (por defecto 10)
          */
-        iniciarTemporizadorLectura: function () {
-            // Detener cualquier temporizador activo previo para evitar duplicados
+        iniciarTemporizadorLectura: function (tiempoRequerido = 10) {
             this.detenerTemporizadorLectura();
+            tiempoLecturaSegundos = 0;
 
             const btnContinuar = obtenerBotonContinuar();
+            const elemTiempo = obtenerElementoTiempo();
 
-            // Deshabilitar botón inicialmente
+            // Bloquear botón al iniciar
             if (btnContinuar) {
                 btnContinuar.disabled = true;
                 btnContinuar.classList.add('disabled');
+                btnContinuar.textContent = `Continuar Lectura (${tiempoRequerido}s)`;
+            }
+
+            if (elemTiempo) {
+                elemTiempo.textContent = `Tiempo mínimo: ${tiempoRequerido}s`;
             }
 
             temporizadorLectura = setInterval(() => {
                 tiempoLecturaSegundos++;
-
-                const segundosRestantes = TIEMPO_REQUERIDO_SEGUNDOS - tiempoLecturaSegundos;
+                const segundosRestantes = tiempoRequerido - tiempoLecturaSegundos;
                 const btn = obtenerBotonContinuar();
+                const elem = obtenerElementoTiempo();
 
-                if (btn) {
-                    if (segundosRestantes > 0) {
-                        // Feedback visual mientras cuenta
-                        btn.textContent = `Continuar (${segundosRestantes}s)`;
+                if (segundosRestantes > 0) {
+                    // Actualizar el estado visual segundo a segundo
+                    if (btn) {
                         btn.disabled = true;
                         btn.classList.add('disabled');
-                    } else {
-                        // Habilitar botón al cumplir el tiempo
+                        btn.textContent = `Continuar Lectura (${segundosRestantes}s)`;
+                    }
+                    if (elem) {
+                        elem.textContent = `Tiempo mínimo: ${segundosRestantes}s`;
+                    }
+                } else {
+                    // Habilitar botón al finalizar el tiempo
+                    if (btn) {
                         btn.disabled = false;
                         btn.classList.remove('disabled');
-                        btn.textContent = 'Continuar a la Evaluación';
+                        btn.textContent = 'Continuar Lectura';
                     }
+                    if (elem) {
+                        elem.textContent = '¡Lectura completada!';
+                    }
+                    this.detenerTemporizadorLectura();
                 }
             }, 1000);
         },
 
         /**
-         * Detiene el intervalo del reloj
+         * Detiene el contador de tiempo
          */
         detenerTemporizadorLectura: function () {
             if (temporizadorLectura) {
@@ -82,9 +97,6 @@ const GestorProgreso = (function () {
             }
         },
 
-        /**
-         * Incrementa e informa intentos en la evaluación
-         */
         registrarIntento: function () {
             intentosEvaluacion++;
         },
@@ -93,9 +105,6 @@ const GestorProgreso = (function () {
             erroresAcumulados++;
         },
 
-        /**
-         * Retorna todo el estado acopiado
-         */
         obtenerEstado: function () {
             return {
                 datosUsuario,
@@ -105,9 +114,6 @@ const GestorProgreso = (function () {
             };
         },
 
-        /**
-         * Reinicia el estado para una nueva capacitación
-         */
         reiniciar: function () {
             this.detenerTemporizadorLectura();
             tiempoLecturaSegundos = 0;
