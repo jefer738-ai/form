@@ -1,394 +1,471 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Plataforma de Capacitación Corporativa | Conecta Carga</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Portal de Inducción y Capacitación</title>
+  <style>
+    /* ==========================================================================
+       ESTILOS GLOBALES Y PALETA DE COLORES
+       ========================================================================== */
+    :root {
+      --primary: #2563eb;
+      --primary-hover: #1d4ed8;
+      --bg-body: #f8fafc;
+      --card-bg: #ffffff;
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+      --border: #e2e8f0;
+      --danger: #ef4444;
+      --success: #10b981;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, sans-serif; }
+    body { background-color: var(--bg-body); color: var(--text-main); display: flex; justify-content: center; min-height: 100vh; padding: 20px; }
     
-    <!-- Tipografía estilo corporativo Microsoft (Segoe UI / Inter) -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    .container { width: 100%; max-width: 680px; margin: auto; }
+    .card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 28px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); margin-bottom: 20px; }
     
-    <!-- Hojas de Estilo Modularizadas (Orden estricto de especificidad) -->
-    <link rel="stylesheet" href="css/styles.css">
-    <link rel="stylesheet" href="css/formulario.css">
-    <link rel="stylesheet" href="css/contenido.css">
-    <link rel="stylesheet" href="css/examen.css">
-    <link rel="stylesheet" href="css/firma.css">
-    <link rel="stylesheet" href="css/responsive.css">
+    h1, h2, h3 { color: var(--text-main); margin-bottom: 12px; }
+    p { color: var(--text-muted); font-size: 0.95rem; line-height: 1.5; margin-bottom: 16px; }
+
+    /* FORMULARIOS & INPUTS */
+    .form-group { margin-bottom: 16px; }
+    label { display: block; font-weight: 600; font-size: 0.875rem; margin-bottom: 6px; }
+    input[type="text"], input[type="email"] { width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: 8px; font-size: 1rem; outline: none; }
+    input:focus { border-color: var(--primary); ring: 2px var(--primary); }
+
+    /* BOTONES */
+    .btn-group { display: flex; gap: 10px; margin-top: 20px; }
+    .btn { flex: 1; padding: 12px 20px; border: none; border-radius: 8px; font-weight: 600; font-size: 0.95rem; cursor: pointer; text-align: center; transition: background 0.2s; }
+    .btn-primary { background: var(--primary); color: #fff; }
+    .btn-primary:hover { background: var(--primary-hover); }
+    .btn-secondary { background: #e2e8f0; color: var(--text-main); }
+    .btn-secondary:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    /* BARRA DE PROGRESO */
+    .progress-bar { height: 8px; background: #e2e8f0; border-radius: 4px; overflow: hidden; margin-bottom: 20px; }
+    .progress-fill { height: 100%; background: var(--primary); width: 0%; transition: width 0.3s; }
+
+    /* PANTALLAS (SPA) */
+    .step { display: none; }
+    .step.active { display: block; }
+
+    /* ALERTAS */
+    .alert { padding: 12px 16px; border-radius: 8px; font-size: 0.9rem; margin-bottom: 16px; display: none; }
+    .alert-danger { background: #fef2f2; color: #991b1b; border: 1px solid #fecaca; }
+    .alert-success { background: #ecfdf5; color: #065f46; border: 1px solid #a7f3d0; }
+
+    /* OPIONES DE PREGUNTAS */
+    .option-item { display: block; padding: 12px; border: 1px solid var(--border); border-radius: 8px; margin-bottom: 8px; cursor: pointer; }
+    .option-item input { margin-right: 10px; }
+
+    /* CANVAS DE FIRMA */
+    canvas { width: 100%; height: 180px; border: 2px dashed var(--border); border-radius: 8px; background: #fafafa; cursor: crosshair; touch-action: none; }
+
+    /* ESTILOS DE IMPRESIÓN (PDF) */
+    @media print {
+      body { background: #fff; padding: 0; }
+      .card { box-shadow: none; border: none; }
+      .no-print { display: none !important; }
+    }
+  </style>
 </head>
 <body>
 
-    <!-- ==========================================================================
-         OVERLAY DE CARGA (Para peticiones asíncronas a Google Sheets)
-         Ajustado con inline style para evitar bloqueos por especificidad CSS
-         ========================================================================== -->
-    <div id="loader-overlay" class="loader-overlay d-none" style="display: none !important;">
-        <div id="loader-message">Procesando información...</div>
+<div class="container">
+  <div class="card">
+    
+    <!-- PASO 1: REGISTRO DIRECTO -->
+    <div id="step-1" class="step active">
+      <h2>Registro de Inducción</h2>
+      <p>Ingresa tus datos para dar inicio a la lectura del material.</p>
+      <div id="alert-step-1" class="alert alert-danger">Por favor completa todos los campos correctamente.</div>
+      
+      <form id="form-registro">
+        <div class="form-group">
+          <label for="nombre">Nombre Completo</label>
+          <input type="text" id="nombre" placeholder="Ej. Juan Pérez" required>
+        </div>
+        <div class="form-group">
+          <label for="correo">Correo Electrónico</label>
+          <input type="email" id="correo" placeholder="ejemplo@empresa.com" required>
+        </div>
+        <button type="submit" class="btn btn-primary" style="width: 100%;">Comenzar Lectura</button>
+      </form>
     </div>
 
-    <!-- ==========================================================================
-         CABECERA CORPORATIVA Y BARRA DE PROGRESO GLOBAL
-         ========================================================================== -->
-    <header class="header-corporativo">
-        <div class="header-container">
-            <div class="logo-container">
-                <div class="logo-fallback" id="logo-wrapper">
-                    <span class="logo-icon">CC</span>
-                    <span class="logo-text">Conecta Carga</span>
-                </div>
-                <span class="header-separator">|</span>
-                <h1 class="header-title">Portal de Capacitación Interna</h1>
-            </div>
+    <!-- PASO 2: LECTURA EN BLOQUES -->
+    <div id="step-2" class="step">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+        <span id="label-bloque" style="font-size:0.85rem; font-weight:600; color:var(--text-muted);">Bloque 1 de 5</span>
+      </div>
+      <div class="progress-bar"><div id="progress-fill" class="progress-fill"></div></div>
 
-            <!-- Barra de Progreso Global -->
-            <div id="progreso-global-container" class="progreso-container" aria-label="Progreso de la capacitación">
-                <div class="progreso-info">
-                    <span id="progreso-paso-texto" class="progreso-paso">Paso 1 de 7: Bienvenida</span>
-                    <span id="progreso-porcentaje-texto" class="progreso-porcentaje">0%</span>
-                </div>
-                <div class="progreso-barra-fondo">
-                    <div id="progreso-barra-relleno" class="progreso-barra-relleno" style="width: 0%;"></div>
-                </div>
-            </div>
+      <div id="contenido-lectura">
+        <!-- Contenidos dinámicos -->
+        <div class="bloque-content" id="bloque-1">
+          <h3>1. Introducción y Normativa</h3>
+          <p>Bienvenido al módulo de inducción. En esta sección revisaremos los lineamientos generales de seguridad y convivencia dentro de la organización.</p>
+          <p>Es indispensable conocer las rutas de evacuación y mantener las áreas de trabajo despejadas para prevenir incidentes.</p>
         </div>
-    </header>
-
-    <!-- ==========================================================================
-         CONTENEDOR PRINCIPAL DE LA APLICACIÓN (SPA)
-         ========================================================================== -->
-    <main class="main-container">
-        
-        <!-- PANTALLA 1: BIENVENIDA -->
-        <section id="pantalla-bienvenida" class="card-pantalla activa" aria-labelledby="titulo-bienvenida">
-            <div class="bienvenida-header">
-                <div class="badge-corporativo">Capacitación Obligatoria</div>
-                <h2 id="titulo-bienvenida" class="card-titulo">Protocolo Operativo y Uso de Plataforma</h2>
-                <p class="card-subtitulo">Por favor, lee atentamente las instrucciones antes de comenzar tu sesión.</p>
-            </div>
-            
-            <div class="bienvenida-contenido">
-                <div class="info-box">
-                    <h3><span class="icon-info">i</span> Instrucciones del Proceso:</h3>
-                    <ul class="lista-instrucciones">
-                        <li><strong>Registro:</strong> Ingresa tu nombre completo y correo corporativo válido. El sistema verificará si ya has realizado esta capacitación.</li>
-                        <li><strong>Lectura Controlada:</strong> El módulo de estudio está dividido por bloques. Cada bloque cuenta con un tiempo de lectura mínimo obligatorio.</li>
-                        <li><strong>Evaluación:</strong> Deberás aprobar un cuestionario aleatorio de 2 preguntas sin margen de error (100% de aciertos requerido).</li>
-                        <li><strong>Confirmación y Firma:</strong> Finalizarás firmando digitalmente en pantalla como constancia de recepción y entendimiento.</li>
-                        <li><strong>Persistencia:</strong> Tu progreso se guarda automáticamente en tu navegador. Si cierras la ventana, podrás retomar donde quedaste.</li>
-                    </ul>
-                </div>
-
-                <div class="alert-box alert-warning">
-                    <p><strong>Nota importante:</strong> Asegúrate de contar con al menos 15 minutos ininterrumpidos para completar el módulo en su totalidad.</p>
-                </div>
-            </div>
-
-            <div class="card-footer">
-                <button type="button" id="btn-iniciar-capacitacion" class="btn btn-primary btn-lg">
-                    Iniciar Capacitación
-                </button>
-            </div>
-        </section>
-
-        <!-- PANTALLA 2: FORMULARIO DE REGISTRO -->
-        <section id="pantalla-formulario" class="card-pantalla oculta" aria-labelledby="titulo-formulario">
-            <div class="card-header">
-                <h2 id="titulo-formulario" class="card-titulo">Registro de Datos Personales</h2>
-                <p class="card-subtitulo">Ingresa tus credenciales corporativas para verificar tu historial y registrar tu actividad.</p>
-            </div>
-
-            <form id="form-datos-empleado" class="formulario-corporativo" novalidate>
-                <div class="form-group">
-                    <label for="input-nombre" class="form-label">Nombre Completo <span class="required">*</span></label>
-                    <input 
-                        type="text" 
-                        id="input-nombre" 
-                        class="form-input" 
-                        placeholder="Ej. Carlos Alberto Rodríguez Gómez" 
-                        required 
-                        autocomplete="name"
-                    >
-                    <span id="error-nombre" class="form-error oculta">Por favor, ingresa tu nombre completo (mínimo 3 caracteres).</span>
-                </div>
-
-                <div class="form-group">
-                    <label for="input-correo" class="form-label">Correo Corporativo <span class="required">*</span></label>
-                    <input 
-                        type="email" 
-                        id="input-correo" 
-                        class="form-input" 
-                        placeholder="usuario@conectacarga.com" 
-                        required 
-                        autocomplete="email"
-                    >
-                    <span id="error-correo" class="form-error oculta">Por favor, ingresa un correo corporativo válido (@conectacarga.com u oficial).</span>
-                </div>
-
-                <!-- Contenedor para mensajes de validación backend -->
-                <div id="alerta-formulario" class="alert-box oculta"></div>
-
-                <div class="card-footer footer-espaciado">
-                    <button type="button" id="btn-volver-bienvenida" class="btn btn-secondary">
-                        Volver
-                    </button>
-                    <button type="submit" id="btn-enviar-formulario" class="btn btn-primary">
-                        Continuar a Lectura
-                    </button>
-                </div>
-            </form>
-        </section>
-
-        <!-- PANTALLA 3: LECTURA DEL DOCUMENTO (POR BLOQUES) -->
-        <section id="pantalla-lectura" class="card-pantalla oculta" aria-labelledby="titulo-lectura">
-            <div class="card-header">
-                <div class="lectura-meta">
-                    <span id="bloque-indicador" class="badge-bloque">Bloque 1 de 5</span>
-                    <div id="temporizador-contenedor" class="temporizador-pill">
-                        <span class="icon-clock">⏱️</span>
-                        <span id="tiempo-restante">Tiempo mínimo: 10s</span>
-                    </div>
-                </div>
-                <h2 id="titulo-lectura" class="card-titulo">Material de Estudio Obligatorio</h2>
-                <p class="card-subtitulo">Debes permanecer en este bloque el tiempo mínimo requerido antes de continuar.</p>
-            </div>
-
-            <!-- Contenedor dinámico de bloques -->
-            <div id="contenedor-bloques-lectura" class="lectura-cuerpo">
-                
-                <!-- BLOQUE 1: INTRODUCCIÓN -->
-                <article id="bloque-1" class="bloque-contenido activo" data-tiempo="10">
-                    <h3 class="bloque-titulo">1. Introducción al Ecosistema Conecta Carga</h3>
-                    <div class="bloque-texto">
-                        <p>En <strong>Conecta Carga</strong>, nuestro compromiso primordial es garantizar la eficiencia, seguridad y trazabilidad en todas las operaciones logísticas y de transporte de carga a nivel nacional. Esta plataforma ha sido diseñada para estandarizar los procesos operativos y asegurar que todo el personal involucrado comprenda el flujo de información.</p>
-                        <p>El presente documento constituye el manual operativo de cumplimiento estricto para todos los colaboradores, operadores y personal administrativo. La correcta aplicación de estas directrices minimiza errores operativos y optimiza los tiempos de respuesta ante nuestros clientes.</p>
-                    </div>
-                </article>
-
-                <!-- BLOQUE 2: APP MÓVIL -->
-                <article id="bloque-2" class="bloque-contenido oculto" data-tiempo="15">
-                    <h3 class="bloque-titulo">2. Uso Estándar de la Aplicación Móvil</h3>
-                    <div class="bloque-texto">
-                        <p>La aplicación móvil corporativa es la herramienta principal de reporte en campo. Todo conductor y operador de centro de distribución debe mantener la sesión iniciada con sus credenciales oficiales durante su jornada laboral.</p>
-                        <p><strong>Reglas de uso obligatorio en la App Móvil:</strong></p>
-                        <ul>
-                            <li>Registrar el inicio de ruta antes de mover el vehículo de las instalaciones corporativas.</li>
-                            <li>Verificar que el checklist precarga esté diligenciado y firmado digitalmente en la app.</li>
-                            <li>No manipular el dispositivo móvil mientras el vehículo se encuentre en movimiento. Cualquier reporte debe realizarse con el automotor totalmente detenido en zona segura.</li>
-                        </ul>
-                    </div>
-                </article>
-
-                <!-- BLOQUE 3: TRACKING -->
-                <article id="bloque-3" class="bloque-contenido oculto" data-tiempo="15">
-                    <h3 class="bloque-titulo">3. Sistema de Tracking y Trazabilidad Satelital</h3>
-                    <div class="bloque-texto">
-                        <p>El monitoreo satelital (GPS) y el reporte de novedades conforman la columna vertebral de la propuesta de valor de Conecta Carga. Nuestra central de monitoreo opera 24/7 supervisando cada trayecto.</p>
-                        <p>Es responsabilidad del operador emitir las alertas de parada técnica, pernoctación o novedad en ruta (demoras por tráfico, condiciones climáticas o revisiones en retenes oficiales) dentro de los <strong>primeros 15 minutos</strong> de ocurrido el evento mediante el botón "Novedad en Ruta" del módulo de tracking.</p>
-                    </div>
-                </article>
-
-                <!-- BLOQUE 4: ESTADOS DE CUENTA -->
-                <article id="bloque-4" class="bloque-contenido oculto" data-tiempo="12">
-                    <h3 class="bloque-titulo">4. Gestión de Estados de Cuenta y Reportes Administrativos</h3>
-                    <div class="bloque-texto">
-                        <p>Para garantizar una liquidación transparente y oportuna de los servicios logísticos prestados, todo viaje ejecutado debe cerrarse administrativamente en la plataforma dentro de las 24 horas siguientes a la entrega de la mercancía.</p>
-                        <p>El cierre exige la carga legible de la cumplida (remesa firmada y sellada por el destinatario final). La alteración, tachadura o falsificación de documentos de entrega constituye una falta grave al código de ética corporativo y conllevará sanciones inmediatas y bloqueos en el estado de cuenta.</p>
-                    </div>
-                </article>
-
-                <!-- BLOQUE 5: CONCLUSIÓN -->
-                <article id="bloque-5" class="bloque-contenido oculto" data-tiempo="10">
-                    <h3 class="bloque-titulo">5. Conclusión y Compromiso de Seguridad</h3>
-                    <div class="bloque-texto">
-                        <p>La excelencia operativa en Conecta Carga depende del compromiso individual de cada colaborador. Al comprender y aplicar las normas de uso de la app móvil, el reporte oportuno en el sistema de tracking y la correcta gestión de los estados de cuenta, fortalecemos la seguridad y confiabilidad del servicio.</p>
-                        <p>Estás a punto de pasar a la evaluación de conocimientos. Recuerda que debes responder correctamente las 2 preguntas aleatorias asignadas para poder certificar tu capacitación.</p>
-                    </div>
-                </article>
-
-            </div>
-
-            <!-- Barra de progreso interna de la lectura -->
-            <div class="lectura-progreso-barra">
-                <div id="lectura-barra-relleno" class="lectura-barra-relleno" style="width: 20%;"></div>
-            </div>
-
-            <div class="card-footer footer-espaciado">
-                <button type="button" id="btn-lectura-anterior" class="btn btn-secondary" disabled>
-                    Bloque Anterior
-                </button>
-                <button type="button" id="btn-lectura-continuar" class="btn btn-primary">
-                    Continuar Lectura
-                </button>
-            </div>
-        </section>
-
-        <!-- PANTALLA 4: EXAMEN DE CONOCIMIENTOS -->
-        <section id="pantalla-examen" class="card-pantalla oculta" aria-labelledby="titulo-examen">
-            <div class="card-header">
-                <div class="examen-meta">
-                    <span id="badge-intentos" class="badge-examen">Intento actual: 1</span>
-                    <span id="badge-errores" class="badge-errores">Errores acumulados: 0</span>
-                </div>
-                <h2 id="titulo-examen" class="card-titulo">Evaluación de Comprendimiento</h2>
-                <p class="card-subtitulo">Responde correctamente las 2 preguntas seleccionadas aleatoriamente del banco de evaluación. No se permiten fallos.</p>
-            </div>
-
-            <form id="form-examen" class="examen-cuerpo" novalidate>
-                <div id="contenedor-preguntas" class="preguntas-wrapper">
-                    <!-- Preguntas dinámicas -->
-                </div>
-
-                <div id="alerta-examen" class="alert-box alert-danger oculta" role="alert">
-                    <p><strong>Has reprobado este intento.</strong> No es posible mostrar las respuestas correctas. Por política corporativa, se ha generado un nuevo cuestionario aleatorio que debes responder.</p>
-                </div>
-
-                <div class="card-footer footer-espaciado">
-                    <div></div> 
-                    <button type="submit" id="btn-calificar-examen" class="btn btn-primary btn-lg" disabled>
-                        Calificar Evaluación
-                    </button>
-                </div>
-            </form>
-        </section>
-
-        <!-- PANTALLA 5: CONFIRMACIONES LEGALES -->
-        <section id="pantalla-confirmaciones" class="card-pantalla oculta" aria-labelledby="titulo-confirmaciones">
-            <div class="card-header">
-                <div class="badge-exito">Evaluación Aprobada con Éxito</div>
-                <h2 id="titulo-confirmaciones" class="card-titulo">Declaración de Conformidad</h2>
-                <p class="card-subtitulo">Para proceder con la firma digital, es fundamental que ratifiques las siguientes declaraciones corporativas.</p>
-            </div>
-
-            <div class="confirmaciones-cuerpo">
-                <div class="check-box-item">
-                    <label class="custom-checkbox-label">
-                        <input type="checkbox" id="check-lectura" class="custom-checkbox-input">
-                        <span class="custom-checkbox-box"></span>
-                        <span class="custom-checkbox-texto">
-                            <strong>Confirmo que leí completamente el documento</strong> operativo de capacitación de Conecta Carga en todos sus bloques y secciones.
-                        </span>
-                    </label>
-                </div>
-
-                <div class="check-box-item">
-                    <label class="custom-checkbox-label">
-                        <input type="checkbox" id="check-comprension" class="custom-checkbox-input">
-                        <span class="custom-checkbox-box"></span>
-                        <span class="custom-checkbox-texto">
-                            <strong>Confirmo que comprendí el contenido</strong>, políticas y procedimientos descritos, asumiendo la responsabilidad de aplicarlos estrictamente en mis labores diarias.
-                        </span>
-                    </label>
-                </div>
-
-                <div id="alerta-confirmaciones" class="alert-box alert-warning oculta">
-                    Debes marcar ambas casillas de confirmación para poder habilitar el paso de firma digital.
-                </div>
-            </div>
-
-            <div class="card-footer footer-espaciado">
-                <div></div>
-                <button type="button" id="btn-ir-firma" class="btn btn-primary btn-lg" disabled>
-                    Proceder a Firmar
-                </button>
-            </div>
-        </section>
-
-        <!-- PANTALLA 6: FIRMA DIGITAL -->
-        <section id="pantalla-firma" class="card-pantalla oculta" aria-labelledby="titulo-firma">
-            <div class="card-header">
-                <h2 id="titulo-firma" class="card-titulo">Firma Digital del Colaborador</h2>
-                <p class="card-subtitulo">Utiliza tu cursor (ratón) o el dedo (en dispositivos táctiles) para dibujar tu firma en el recuadro inferior.</p>
-            </div>
-
-            <div class="firma-cuerpo">
-                <div class="firma-instrucciones">
-                    <p>Dibuja tu firma sobre la línea punteada. Si no estás conforme con el trazo, puedes limpiar el panel y repetirlo antes de guardar.</p>
-                </div>
-
-                <div class="firma-pad-wrapper">
-                    <canvas id="canvas-firma" class="firma-canvas" width="600" height="250"></canvas>
-                    <div class="firma-linea-guia"></div>
-                    <span class="firma-watermark">Firma Aquí</span>
-                </div>
-
-                <span id="error-firma" class="form-error oculta">Debes realizar tu firma digital antes de guardar y finalizar la capacitación.</span>
-
-                <div class="firma-controles">
-                    <button type="button" id="btn-limpiar-firma" class="btn btn-outline-danger">
-                        🗑️ Borrar Firma
-                    </button>
-                </div>
-            </div>
-
-            <div class="card-footer footer-espaciado">
-                <button type="button" id="btn-volver-confirmaciones" class="btn btn-secondary">
-                    Volver a Declaraciones
-                </button>
-                <button type="button" id="btn-guardar-capacitacion" class="btn btn-success btn-lg">
-                    💾 Guardar y Finalizar Capacitación
-                </button>
-            </div>
-        </section>
-
-        <!-- PANTALLA 7: FINALIZADO -->
-        <section id="pantalla-finalizado" class="card-pantalla oculta" aria-labelledby="titulo-finalizado">
-            <div class="finalizado-header">
-                <div class="icono-exito-grande">✓</div>
-                <h2 id="titulo-finalizado" class="card-titulo">¡Capacitación Completada con Éxito!</h2>
-                <p class="card-subtitulo">Tus datos, evaluación y firma digital han sido debidamente registrados y auditados en los servidores corporativos de Conecta Carga.</p>
-            </div>
-
-            <div class="finalizado-cuerpo">
-                <div class="resumen-tarjeta">
-                    <h3>Resumen del Registro Corporativo</h3>
-                    <ul class="resumen-lista">
-                        <li><strong>Colaborador:</strong> <span id="resumen-nombre">---</span></li>
-                        <li><strong>Correo Oficial:</strong> <span id="resumen-correo">---</span></li>
-                        <li><strong>Fecha y Hora de Cierre:</strong> <span id="resumen-fecha">---</span></li>
-                        <li><strong>Tiempo Total de Estudio:</strong> <span id="resumen-tiempo">---</span></li>
-                        <li><strong>Intentos en Examen:</strong> <span id="resumen-intentos">---</span></li>
-                        <li><strong>Estado de Base de Datos:</strong> <span class="badge-db-success">Sincronizado con Google Sheets</span></li>
-                    </ul>
-                </div>
-
-                <div class="alert-box alert-success">
-                    <p>El registro de tu progreso en la base de datos es inmutable. Ya puedes cerrar esta ventana con total seguridad o volver al inicio si necesitas consultar las directrices.</p>
-                </div>
-            </div>
-
-            <div class="card-footer">
-                <button type="button" id="btn-reiniciar-portal" class="btn btn-outline-primary">
-                    Volver al Inicio del Portal
-                </button>
-            </div>
-        </section>
-
-    </main>
-
-    <!-- ==========================================================================
-         PIE DE PÁGINA CORPORATIVO
-         ========================================================================== -->
-    <footer class="footer-corporativo">
-        <div class="footer-container">
-            <p>&copy; 2026 Conecta Carga. Todos los derechos reservados. | Departamento de Operaciones y Tecnología.</p>
-            <p class="footer-subtext">Plataforma Corporativa de Capacitación v1.0.0 - Arquitectura SPA Vanilla JS.</p>
+        <div class="bloque-content" id="bloque-2" style="display:none;">
+          <h3>2. Políticas de Seguridad e Higiene</h3>
+          <p>El uso del equipo de protección personal (EPP) es obligatorio en todas las zonas operativas definidas por la empresa.</p>
+          <p>Cualquier condición de riesgo debe reportarse inmediatamente al supervisor directo o al área de SST.</p>
         </div>
-    </footer>
+        <div class="bloque-content" id="bloque-3" style="display:none;">
+          <h3>3. Código de Conducta</h3>
+          <p>Mantenemos un compromiso firme con el respeto, la inclusión y la transparencia en cada una de nuestras interacciones diarias.</p>
+          <p>No se tolera ningún tipo de discriminación ni acoso dentro ni fuera de las instalaciones corporativas.</p>
+        </div>
+        <div class="bloque-content" id="bloque-4" style="display:none;">
+          <h3>4. Manejo de Información y Confidencialidad</h3>
+          <p>Toda la información operativa, comercial y de clientes tiene carácter confidencial y debe ser resguardada.</p>
+          <p>Queda estrictamente prohibido compartir credenciales de acceso o extraer archivos no autorizados.</p>
+        </div>
+        <div class="bloque-content" id="bloque-5" style="display:none;">
+          <h3>5. Compromiso Operativo</h3>
+          <p>Has llegado al final del material de lectura. Al continuar, presentarás una breve evaluación de 2 preguntas para validar los conceptos clave.</p>
+        </div>
+      </div>
 
-    <!-- ==========================================================================
-         LIBRERÍAS EXTERNAS Y SCRIPTS MODULARES
-         ========================================================================== -->
-    <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.1.7/dist/signature_pad.umd.min.js"></script>
-    <script src="js/utilidades.js"></script>
-    <script src="js/sheets.js"></script>
-    <script src="js/preguntas.js"></script>
-    <script src="js/progreso.js"></script>
-    <script src="js/evaluacion.js"></script>
-    <script src="js/firma.js"></script>
-    <script src="js/main.js"></script>
+      <div class="btn-group">
+        <button type="button" id="btn-prev" class="btn btn-secondary" disabled>Anterior</button>
+        <button type="button" id="btn-next" class="btn btn-primary">Continuar</button>
+      </div>
+    </div>
 
+    <!-- PASO 3: EVALUACIÓN ALEATORIA -->
+    <div id="step-3" class="step">
+      <h2>Evaluación de Comprensión</h2>
+      <p>Responde correctamente las siguientes 2 preguntas para proceder con tu firma.</p>
+      
+      <div id="alert-quiz" class="alert alert-danger">Respuestas incorrectas. Se han cargado 2 preguntas nuevas. ¡Inténtalo de nuevo!</div>
+
+      <form id="form-quiz">
+        <div id="contenedor-preguntas"></div>
+        <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 15px;">Validar Respuestas</button>
+      </form>
+    </div>
+
+    <!-- PASO 4: FIRMA DIGITAL -->
+    <div id="step-4" class="step">
+      <h2>Firma de Conformidad</h2>
+      <p>Declaro haber leído y comprendido la totalidad del material de inducción.</p>
+      
+      <div id="alert-firma" class="alert alert-danger">Por favor dibuja tu firma antes de finalizar.</div>
+
+      <label>Dibuja tu firma a continuación:</label>
+      <canvas id="canvas-firma"></canvas>
+      
+      <button type="button" id="btn-limpiar-firma" class="btn btn-secondary" style="margin-top: 8px; padding: 6px; font-size: 0.8rem;">Borrar Firma</button>
+
+      <div class="btn-group">
+        <button type="button" id="btn-guardar" class="btn btn-primary">Finalizar Registro</button>
+      </div>
+    </div>
+
+    <!-- PASO 5: RESUMEN / FINALIZADO -->
+    <div id="step-5" class="step">
+      <div class="alert alert-success" style="display:block;">¡Inducción completada con éxito y registrada en el sistema!</div>
+      <h2>Comprobante de Inducción</h2>
+      <div style="margin: 20px 0; font-size: 0.95rem; line-height: 1.8;">
+        <p><strong>Nombre:</strong> <span id="resumen-nombre">-</span></p>
+        <p><strong>Correo:</strong> <span id="resumen-correo">-</span></p>
+        <p><strong>Fecha y Hora:</strong> <span id="resumen-fecha">-</span></p>
+      </div>
+
+      <div class="btn-group no-print">
+        <button type="button" onclick="window.print()" class="btn btn-secondary">Descargar / Imprimir PDF</button>
+        <button type="button" onclick="location.reload()" class="btn btn-primary">Realizar Nuevo Registro</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+/**
+ * ============================================================================
+ * LÓGICA PRINCIPAL UNIFICADA (SINGLE FILE ARCHITECTURE)
+ * ============================================================================
+ */
+
+// ⚠️ REEMPLAZA ESTA URL CON LA DE TU GOOGLE APPS SCRIPT
+const GOOGLE_SHEETS_URL = "https://script.google.com/macros/s/AKfycbyOYplzv7m1iVg_kRobOXyF6JJgokksPwjt5lrW74HaBJ38BdTg98VPe7SsuzCh5PtL/exec";
+
+// BANCO DE PREGUNTAS (Permite seleccionar parejas aleatorias sin repetir en el fallo)
+const BANCO_PREGUNTAS = [
+  {
+    id: 1,
+    pregunta: "¿Qué es obligatorio utilizar en las zonas operativas?",
+    opciones: ["Traje formal", "Equipo de Protección Personal (EPP)", "Ropa deportiva"],
+    correcta: 1
+  },
+  {
+    id: 2,
+    pregunta: "¿A quién se debe reportar una condición de riesgo?",
+    opciones: ["Al supervisor directo o área de SST", "A un compañero de otro departamento", "A nadie, no es importante"],
+    correcta: 0
+  },
+  {
+    id: 3,
+    pregunta: "¿Cuál es la política respecto a la información de la empresa?",
+    opciones: ["Es pública", "Es confidencial y debe resguardarse", "Se puede compartir en redes sociales"],
+    correcta: 1
+  },
+  {
+    id: 4,
+    pregunta: "¿Qué conducta se promueve en la interacción diaria?",
+    opciones: ["Competencia agresiva", "Respeto, inclusión y transparencia", "Trabajo individual aislado"],
+    correcta: 1
+  }
+];
+
+// ESTADO GLOBAL DE LA APLICACIÓN
+let usuario = { nombre: '', correo: '' };
+let bloqueActual = 1;
+const TOTAL_BLOQUES = 5;
+let preguntasActuales = [];
+let idsPreguntasAnteriores = [];
+
+// DOCUMENT READY
+document.addEventListener('DOMContentLoaded', () => {
+
+  /* --------------------------------------------------------------------------
+     PASO 1: REGISTRO DE USUARIO
+     -------------------------------------------------------------------------- */
+  const formRegistro = document.getElementById('form-registro');
+  formRegistro.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const nombre = document.getElementById('nombre').value.trim();
+    const correo = document.getElementById('correo').value.trim();
+    
+    if (!nombre || !correo) {
+      mostrarAlerta('alert-step-1', true);
+      return;
+    }
+
+    usuario.nombre = nombre;
+    usuario.correo = correo;
+    
+    cambiarPaso(2);
+    actualizarLectura();
+  });
+
+  /* --------------------------------------------------------------------------
+     PASO 2: LECTURA EN BLOQUES (NAVEGACIÓN LIBRE)
+     -------------------------------------------------------------------------- */
+  const btnPrev = document.getElementById('btn-prev');
+  const btnNext = document.getElementById('btn-next');
+
+  btnPrev.addEventListener('click', () => {
+    if (bloqueActual > 1) {
+      bloqueActual--;
+      actualizarLectura();
+    }
+  });
+
+  btnNext.addEventListener('click', () => {
+    if (bloqueActual < TOTAL_BLOQUES) {
+      bloqueActual++;
+      actualizarLectura();
+    } else {
+      // Pasar a la evaluación
+      generarPreguntasAleatorias();
+      cambiarPaso(3);
+    }
+  });
+
+  function actualizarLectura() {
+    for (let i = 1; i <= TOTAL_BLOQUES; i++) {
+      const el = document.getElementById(`bloque-${i}`);
+      if (el) el.style.display = (i === bloqueActual) ? 'block' : 'none';
+    }
+
+    document.getElementById('label-bloque').textContent = `Bloque ${bloqueActual} de ${TOTAL_BLOQUES}`;
+    document.getElementById('progress-fill').style.width = `${(bloqueActual / TOTAL_BLOQUES) * 100}%`;
+    
+    btnPrev.disabled = (bloqueActual === 1);
+    btnNext.textContent = (bloqueActual === TOTAL_BLOQUES) ? 'Ir a Evaluación' : 'Continuar';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  /* --------------------------------------------------------------------------
+     PASO 3: EVALUACIÓN ALEATORIA
+     -------------------------------------------------------------------------- */
+  function generarPreguntasAleatorias() {
+    // Filtrar para no repetir las preguntas anteriores en un reintento si es posible
+    let disponibles = BANCO_PREGUNTAS.filter(p => !idsPreguntasAnteriores.includes(p.id));
+    if (disponibles.length < 2) disponibles = BANCO_PREGUNTAS; // Fallback
+
+    // Ordenar aleatoriamente y tomar 2
+    preguntasActuales = [...disponibles].sort(() => 0.5 - Math.random()).slice(0, 2);
+    idsPreguntasAnteriores = preguntasActuales.map(p => p.id);
+
+    // Renderizar HTML de preguntas
+    const container = document.getElementById('contenedor-preguntas');
+    container.innerHTML = '';
+
+    preguntasActuales.forEach((q, index) => {
+      const div = document.createElement('div');
+      div.className = 'form-group';
+      div.style.marginBottom = '20px';
+
+      let opcionesHTML = q.opciones.map((op, i) => `
+        <label class="option-item">
+          <input type="radio" name="p_${index}" value="${i}" required> ${op}
+        </label>
+      `).join('');
+
+      div.innerHTML = `<label style="font-size:1rem;">${index + 1}. ${q.pregunta}</label>${opcionesHTML}`;
+      container.appendChild(div);
+    });
+  }
+
+  const formQuiz = document.getElementById('form-quiz');
+  formQuiz.addEventListener('submit', (e) => {
+    e.preventDefault();
+    mostrarAlerta('alert-quiz', false);
+
+    let aprueba = true;
+    preguntasActuales.forEach((q, index) => {
+      const seleccion = document.querySelector(`input[name="p_${index}"]:checked`);
+      if (!seleccion || parseInt(seleccion.value) !== q.correcta) {
+        aprueba = false;
+      }
+    });
+
+    if (aprueba) {
+      cambiarPaso(4);
+      inicializarCanvasFirma();
+    } else {
+      mostrarAlerta('alert-quiz', true);
+      generarPreguntasAleatorias(); // Genera 2 distintas para el nuevo intento
+    }
+  });
+
+  /* --------------------------------------------------------------------------
+     PASO 4: FIRMA DIGITAL (TACTIL + MOUSE)
+     -------------------------------------------------------------------------- */
+  const canvas = document.getElementById('canvas-firma');
+  const ctx = canvas.getContext('2d');
+  let dibujando = false;
+  let firmaTrazada = false;
+
+  function inicializarCanvasFirma() {
+    // Ajustar resolución real del canvas
+    canvas.width = canvas.offsetWidth;
+    canvas.height = canvas.offsetHeight;
+    ctx.lineWidth = 2.5;
+    ctx.lineCap = 'round';
+    ctx.strokeStyle = '#0f172a';
+  }
+
+  function obtenerPosicion(e) {
+    const rect = canvas.getBoundingClientRect();
+    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+    return {
+      x: clientX - rect.left,
+      y: clientY - rect.top
+    };
+  }
+
+  function empezarDibujo(e) {
+    dibujando = true;
+    firmaTrazada = true;
+    const pos = obtenerPosicion(e);
+    ctx.beginPath();
+    ctx.moveTo(pos.x, pos.y);
+  }
+
+  function dibujar(e) {
+    if (!dibujando) return;
+    e.preventDefault();
+    const pos = obtenerPosicion(e);
+    ctx.lineTo(pos.x, pos.y);
+    ctx.stroke();
+  }
+
+  function detenerDibujo() {
+    dibujando = false;
+  }
+
+  // Eventos Mouse y Táctil
+  canvas.addEventListener('mousedown', empezarDibujo);
+  canvas.addEventListener('mousemove', dibujar);
+  window.addEventListener('mouseup', detenerDibujo);
+
+  canvas.addEventListener('touchstart', empezarDibujo, { passive: false });
+  canvas.addEventListener('touchmove', dibujar, { passive: false });
+  canvas.addEventListener('touchend', detenerDibujo);
+
+  document.getElementById('btn-limpiar-firma').addEventListener('click', () => {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    firmaTrazada = false;
+  });
+
+  /* --------------------------------------------------------------------------
+     GUARDADO Y ENVÍO A GOOGLE SHEETS
+     -------------------------------------------------------------------------- */
+  document.getElementById('btn-guardar').addEventListener('click', async () => {
+    if (!firmaTrazada) {
+      mostrarAlerta('alert-firma', true);
+      return;
+    }
+
+    const btn = document.getElementById('btn-guardar');
+    btn.disabled = true;
+    btn.textContent = 'Enviando...';
+
+    const fechaActual = new Date();
+    const payload = {
+      nombre: usuario.nombre,
+      correo: usuario.correo,
+      fecha: fechaActual.toLocaleDateString('es-CO'),
+      hora: fechaActual.toLocaleTimeString('es-CO'),
+      firmaBase64: canvas.toDataURL()
+    };
+
+    // Envío asíncrono a Google Sheets
+    try {
+      if (GOOGLE_SHEETS_URL && GOOGLE_SHEETS_URL !== "TU_WEB_APP_URL_AQUI") {
+        await fetch(GOOGLE_SHEETS_URL, {
+          method: 'POST',
+          mode: 'no-cors',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+      }
+    } catch (err) {
+      console.error('Error al enviar datos:', err);
+    }
+
+    // Mostrar Resumen Final
+    document.getElementById('resumen-nombre').textContent = payload.nombre;
+    document.getElementById('resumen-correo').textContent = payload.correo;
+    document.getElementById('resumen-fecha').textContent = `${payload.fecha} - ${payload.hora}`;
+
+    cambiarPaso(5);
+  });
+
+  /* --------------------------------------------------------------------------
+     UTILIDADES GENERALES
+     -------------------------------------------------------------------------- */
+  function cambiarPaso(paso) {
+    document.querySelectorAll('.step').forEach(el => el.classList.remove('active'));
+    document.getElementById(`step-${paso}`).classList.add('active');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function mostrarAlerta(id, visible) {
+    const el = document.getElementById(id);
+    if (el) el.style.display = visible ? 'block' : 'none';
+  }
+
+});
+</script>
 </body>
 </html>
