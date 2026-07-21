@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Plataforma de Capacitación Corporativa | Conecta Carga</title>
+    
+    <!-- Tipografía estilo corporativo Microsoft (Segoe UI / Inter) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Hojas de Estilo Modularizadas (Orden estricto de especificidad) -->
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/formulario.css">
+    <link rel="stylesheet" href="css/contenido.css">
+    <link rel="stylesheet" href="css/examen.css">
+    <link rel="stylesheet" href="css/firma.css">
+    <link rel="stylesheet" href="css/responsive.css">
+</head>
+<body>
+
+    <!-- ==========================================================================
+         OVERLAY DE CARGA (Para peticiones asíncronas a Google Sheets)
+         ========================================================================== -->
+    <div id="loader-overlay" class="loader-overlay hidden" role="alert" aria-busy="true">
+        <div class="loader-content">
+            <div class="spinner"></div>
+            <p id="loader-message" class="loader-text">Procesando información...</p>
+        </div>
+    </div>
+
+    <!-- ==========================================================================
+         CABECERA CORPORATIVA Y BARRA DE PROGRESO GLOBAL
+         ========================================================================== -->
+    <header class="header-corporativo">
+        <div class="header-container">
+            <div class="logo-container">
+                <!-- Se utiliza un texto estilizado con fallback gráfico por si no existe logo.png en fases iniciales -->
+                <div class="logo-fallback" id="logo-wrapper">
+                    <span class="logo-icon">CC</span>
+                    <span class="logo-text">Conecta Carga</span>
+                </div>
+                <span class="header-separator">|</span>
+                <h1 class="header-title">Portal de Capacitación Interna</h1>
+            </div>
+
+            <!-- Barra de Progreso (Siempre visible según requerimiento) -->
+            <div id="progreso-global-container" class="progreso-container" aria-label="Progreso de la capacitación">
+                <div class="progreso-info">
+                    <span id="progreso-paso-texto" class="progreso-paso">Paso 1 de 7: Bienvenida</span>
+                    <span id="progreso-porcentaje-texto" class="progreso-porcentaje">0%</span>
+                </div>
+                <div class="progreso-barra-fondo">
+                    <div id="progreso-barra-relleno" class="progreso-barra-relleno" style="width: 0%;"></div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- ==========================================================================
+         CONTENEDOR PRINCIPAL DE LA APLICACIÓN (SPA)
+         ========================================================================== -->
+    <main class="main-container">
+        
+        <!-- PANTALLA 1: BIENVENIDA -->
+        <section id="pantalla-bienvenida" class="card-pantalla activa" aria-labelledby="titulo-bienvenida">
+            <div class="bienvenida-header">
+                <div class="badge-corporativo">Capacitación Obligatoria</div>
+                <h2 id="titulo-bienvenida" class="card-titulo">Protocolo Operativo y Uso de Plataforma</h2>
+                <p class="card-subtitulo">Por favor, lee atentamente las instrucciones antes de comenzar tu sesión.</p>
+            </div>
+            
+            <div class="bienvenida-contenido">
+                <div class="info-box">
+                    <h3><span class="icon-info">i</span> Instrucciones del Proceso:</h3>
+                    <ul class="lista-instrucciones">
+                        <li><strong>Registro:</strong> Ingresa tu nombre completo y correo corporativo válido. El sistema verificará si ya has realizado esta capacitación.</li>
+                        <li><strong>Lectura Controlada:</strong> El módulo de estudio está dividido por bloques. Cada bloque cuenta con un tiempo de lectura mínimo obligatorio.</li>
+                        <li><strong>Evaluación:</strong> Deberás aprobar un cuestionario aleatorio de 2 preguntas sin margen de error (100% de aciertos requerido).</li>
+                        <li><strong>Confirmación y Firma:</strong> Finalizarás firmando digitalmente en pantalla como constancia de recepción y entendimiento.</li>
+                        <li><strong>Persistencia:</strong> Tu progreso se guarda automáticamente en tu navegador. Si cierras la ventana, podrás retomar donde quedaste.</li>
+                    </ul>
+                </div>
+
+                <div class="alert-box alert-warning">
+                    <p><strong>Nota importante:</strong> Asegúrate de contar con al menos 15 minutos ininterrumpidos para completar el módulo en su totalidad.</p>
+                </div>
+            </div>
+
+            <div class="card-footer">
+                <button type="button" id="btn-iniciar-capacitacion" class="btn btn-primary btn-lg">
+                    Iniciar Capacitación
+                </button>
+            </div>
+        </section>
+
+        <!-- PANTALLA 2: FORMULARIO DE REGISTRO -->
+        <section id="pantalla-formulario" class="card-pantalla oculta" aria-labelledby="titulo-formulario">
+            <div class="card-header">
+                <h2 id="titulo-formulario" class="card-titulo">Registro de Datos Personales</h2>
+                <p class="card-subtitulo">Ingresa tus credenciales corporativas para verificar tu historial y registrar tu actividad.</p>
+            </div>
+
+            <form id="form-datos-empleado" class="formulario-corporativo" novalidate>
+                <div class="form-group">
+                    <label for="input-nombre" class="form-label">Nombre Completo <span class="required">*</span></label>
+                    <input 
+                        type="text" 
+                        id="input-nombre" 
+                        class="form-input" 
+                        placeholder="Ej. Carlos Alberto Rodríguez Gómez" 
+                        required 
+                        autocomplete="name"
+                    >
+                    <span id="error-nombre" class="form-error oculta">Por favor, ingresa tu nombre completo (mínimo 3 caracteres).</span>
+                </div>
+
+                <div class="form-group">
+                    <label for="input-correo" class="form-label">Correo Corporativo <span class="required">*</span></label>
+                    <input 
+                        type="email" 
+                        id="input-correo" 
+                        class="form-input" 
+                        placeholder="usuario@conectacarga.com" 
+                        required 
+                        autocomplete="email"
+                    >
+                    <span id="error-correo" class="form-error oculta">Por favor, ingresa un correo corporativo válido (@conectacarga.com u oficial).</span>
+                </div>
+
+                <!-- Contenedor para mensajes de validación backend (Duplicados o errores de conexión) -->
+                <div id="alerta-formulario" class="alert-box oculta"></div>
+
+                <div class="card-footer footer-espaciado">
+                    <button type="button" id="btn-volver-bienvenida" class="btn btn-secondary">
+                        Volver
+                    </button>
+                    <button type="submit" id="btn-enviar-formulario" class="btn btn-primary">
+                        Continuar a Lectura
+                    </button>
+                </div>
+            </form>
+        </section>
+
+        <!-- PANTALLA 3: LECTURA DEL DOCUMENTO (POR BLOQUES) -->
+        <section id="pantalla-lectura" class="card-pantalla oculta" aria-labelledby="titulo-lectura">
+            <div class="card-header">
+                <div class="lectura-meta">
+                    <span id="bloque-indicador" class="badge-bloque">Bloque 1 de 5</span>
+                    <div id="temporizador-contenedor" class="temporizador-pill">
+                        <span class="icon-clock">⏱️</span>
+                        <span id="tiempo-restante">Tiempo mínimo: 10s</span>
+                    </div>
+                </div>
+                <h2 id="titulo-lectura" class="card-titulo">Material de Estudio Obligatorio</h2>
+                <p class="card-subtitulo">Debes permanecer en este bloque el tiempo mínimo requerido antes de continuar.</p>
+            </div>
+
+            <!-- Contenedor dinámico donde contenido.js inyectará o gestionará los bloques -->
+            <div id="contenedor-bloques-lectura" class="lectura-cuerpo">
+                
+                <!-- BLOQUE 1: INTRODUCCIÓN -->
+                <article id="bloque-1" class="bloque-contenido activo" data-tiempo="10">
+                    <h3 class="bloque-titulo">1. Introducción al Ecosistema Conecta Carga</h3>
+                    <div class="bloque-texto">
+                        <p>En <strong>Conecta Carga</strong>, nuestro compromiso primordial es garantizar la eficiencia, seguridad y trazabilidad en todas las operaciones logísticas y de transporte de carga a nivel nacional. Esta plataforma ha sido diseñada para estandarizar los procesos operativos y asegurar que todo el personal involucrado comprenda el flujo de información.</p>
+                        <p>El presente documento constituye el manual operativo de cumplimiento estricto para todos los colaboradores, operadores y personal administrativo. La correcta aplicación de estas directrices minimiza errores operativos y optimiza los tiempos de respuesta ante nuestros clientes.</p>
+                    </div>
+                </article>
+
+                <!-- BLOQUE 2: APP MÓVIL -->
+                <article id="bloque-2" class="bloque-contenido oculto" data-tiempo="15">
+                    <h3 class="bloque-titulo">2. Uso Estándar de la Aplicación Móvil</h3>
+                    <div class="bloque-texto">
+                        <p>La aplicación móvil corporativa es la herramienta principal de reporte en campo. Todo conductor y operador de centro de distribución debe mantener la sesión iniciada con sus credenciales oficiales durante su jornada laboral.</p>
+                        <p><strong>Reglas de uso obligatorio en la App Móvil:</strong></p>
+                        <ul>
+                            <li>Registrar el inicio de ruta antes de mover el vehículo de las instalaciones corporativas.</li>
+                            <li>Verificar que el checklist precarga esté diligenciado y firmado digitalmente en la app.</li>
+                            <li>No manipular el dispositivo móvil mientras el vehículo se encuentre en movimiento. Cualquier reporte debe realizarse con el automotor totalmente detenido en zona segura.</li>
+                        </ul>
+                    </div>
+                </article>
+
+                <!-- BLOQUE 3: TRACKING -->
+                <article id="bloque-3" class="bloque-contenido oculto" data-tiempo="15">
+                    <h3 class="bloque-titulo">3. Sistema de Tracking y Trazabilidad Satelital</h3>
+                    <div class="bloque-texto">
+                        <p>El monitoreo satelital (GPS) y el reporte de novedades conforman la columna vertebral de la propuesta de valor de Conecta Carga. Nuestra central de monitoreo opera 24/7 supervisando cada trayecto.</p>
+                        <p>Es responsabilidad del operador emitir las alertas de parada técnica, pernoctación o novedad en ruta (demoras por tráfico, condiciones climáticas o revisiones en retenes oficiales) dentro de los <strong>primeros 15 minutos</strong> de ocurrido el evento mediante el botón "Novedad en Ruta" del módulo de tracking.</p>
+                    </div>
+                </article>
+
+                <!-- BLOQUE 4: ESTADOS DE CUENTA -->
+                <article id="bloque-4" class="bloque-contenido oculto" data-tiempo="12">
+                    <h3 class="bloque-titulo">4. Gestión de Estados de Cuenta y Reportes Administrativos</h3>
+                    <div class="bloque-texto">
+                        <p>Para garantizar una liquidación transparente y oportuna de los servicios logísticos prestados, todo viaje ejecutado debe cerrarse administrativamente en la plataforma dentro de las 24 horas siguientes a la entrega de la mercancía.</p>
+                        <p>El cierre exige la carga legible de la cumplida (remesa firmada y sellada por el destinatario final). La alteración, tachadura o falsificación de documentos de entrega constituye una falta grave al código de ética corporativo y conllevará sanciones inmediatas y bloqueos en el estado de cuenta.</p>
+                    </div>
+                </article>
+
+                <!-- BLOQUE 5: CONCLUSIÓN -->
+                <article id="bloque-5" class="bloque-contenido oculto" data-tiempo="10">
+                    <h3 class="bloque-titulo">5. Conclusión y Compromiso de Seguridad</h3>
+                    <div class="bloque-texto">
+                        <p>La excelencia operativa en Conecta Carga depende del compromiso individual de cada colaborador. Al comprender y aplicar las normas de uso de la app móvil, el reporte oportuno en el sistema de tracking y la correcta gestión de los estados de cuenta, fortalecemos la seguridad y confiabilidad del servicio.</p>
+                        <p>Estás a punto de pasar a la evaluación de conocimientos. Recuerda que debes responder correctamente las 2 preguntas aleatorias asignadas para poder certificar tu capacitación.</p>
+                    </div>
+                </article>
+
+            </div>
+
+            <!-- Barra de progreso interna de la lectura -->
+            <div class="lectura-progreso-barra">
+                <div id="lectura-barra-relleno" class="lectura-barra-relleno" style="width: 20%;"></div>
+            </div>
+
+            <div class="card-footer footer-espaciado">
+                <button type="button" id="btn-lectura-anterior" class="btn btn-secondary" disabled>
+                    Bloque Anterior
+                </button>
+                <button type="button" id="btn-lectura-continuar" class="btn btn-primary" disabled>
+                    Continuar Lectura
+                </button>
+            </div>
+        </section>
+
+        <!-- PANTALLA 4: EXAMEN DE CONOCIMIENTOS -->
+        <section id="pantalla-examen" class="card-pantalla oculta" aria-labelledby="titulo-examen">
+            <div class="card-header">
+                <div class="examen-meta">
+                    <span id="badge-intentos" class="badge-examen">Intento actual: 1</span>
+                    <span id="badge-errores" class="badge-errores">Errores acumulados: 0</span>
+                </div>
+                <h2 id="titulo-examen" class="card-titulo">Evaluación de Comprendimiento</h2>
+                <p class="card-subtitulo">Responde correctamente las 2 preguntas seleccionadas aleatoriamente del banco de evaluación. No se permiten fallos.</p>
+            </div>
+
+            <!-- Contenedor donde examen.js inyectará las 2 preguntas dinámicas -->
+            <form id="form-examen" class="examen-cuerpo" novalidate>
+                <div id="contenedor-preguntas" class="preguntas-wrapper">
+                    <!-- Las preguntas se generan en runtime via DOM Manipulation -->
+                </div>
+
+                <!-- Caja de retroalimentación en caso de reprobar -->
+                <div id="alerta-examen" class="alert-box alert-danger oculta" role="alert">
+                    <p><strong>Has reprobado este intento.</strong> No es posible mostrar las respuestas correctas. Por política corporativa, se ha generado un nuevo cuestionario aleatorio que debes responder.</p>
+                </div>
+
+                <div class="card-footer footer-espaciado">
+                    <!-- En el examen no permitimos retroceder para evitar saltarse la validación -->
+                    <div></div> 
+                    <button type="submit" id="btn-calificar-examen" class="btn btn-primary btn-lg" disabled>
+                        Calificar Evaluación
+                    </button>
+                </div>
+            </form>
+        </section>
+
+        <!-- PANTALLA 5: CONFIRMACIONES LEGALES (CHECKS) -->
+        <section id="pantalla-confirmaciones" class="card-pantalla oculta" aria-labelledby="titulo-confirmaciones">
+            <div class="card-header">
+                <div class="badge-exito">Evaluación Aprobada con Éxito</div>
+                <h2 id="titulo-confirmaciones" class="card-titulo">Declaración de Conformidad</h2>
+                <p class="card-subtitulo">Para proceder con la firma digital, es fundamental que ratifiques las siguientes declaraciones corporativas.</p>
+            </div>
+
+            <div class="confirmaciones-cuerpo">
+                <div class="check-box-item">
+                    <label class="custom-checkbox-label">
+                        <input type="checkbox" id="check-lectura" class="custom-checkbox-input">
+                        <span class="custom-checkbox-box"></span>
+                        <span class="custom-checkbox-texto">
+                            <strong>Confirmo que leí completamente el documento</strong> operativo de capacitación de Conecta Carga en todos sus bloques y secciones.
+                        </span>
+                    </label>
+                </div>
+
+                <div class="check-box-item">
+                    <label class="custom-checkbox-label">
+                        <input type="checkbox" id="check-comprension" class="custom-checkbox-input">
+                        <span class="custom-checkbox-box"></span>
+                        <span class="custom-checkbox-texto">
+                            <strong>Confirmo que comprendí el contenido</strong>, políticas y procedimientos descritos, asumiendo la responsabilidad de aplicarlos estrictamente en mis labores diarias.
+                        </span>
+                    </label>
+                </div>
+
+                <div id="alerta-confirmaciones" class="alert-box alert-warning oculta">
+                    Debes marcar ambas casillas de confirmación para poder habilitar el paso de firma digital.
+                </div>
+            </div>
+
+            <div class="card-footer footer-espaciado">
+                <div></div>
+                <button type="button" id="btn-ir-firma" class="btn btn-primary btn-lg" disabled>
+                    Proceder a Firmar
+                </button>
+            </div>
+        </section>
+
+        <!-- PANTALLA 6: FIRMA DIGITAL -->
+        <section id="pantalla-firma" class="card-pantalla oculta" aria-labelledby="titulo-firma">
+            <div class="card-header">
+                <h2 id="titulo-firma" class="card-titulo">Firma Digital del Colaborador</h2>
+                <p class="card-subtitulo">Utiliza tu cursor (ratón) o el dedo (en dispositivos táctiles) para dibujar tu firma en el recuadro inferior.</p>
+            </div>
+
+            <div class="firma-cuerpo">
+                <div class="firma-instrucciones">
+                    <p>Dibuja tu firma sobre la línea punteada. Si no estás conforme con el trazo, puedes limpiar el panel y repetirlo antes de guardar.</p>
+                </div>
+
+                <!-- Contenedor del Pad de Firma -->
+                <div class="firma-pad-wrapper">
+                    <canvas id="canvas-firma" class="firma-canvas" width="600" height="250"></canvas>
+                    <div class="firma-linea-guia"></div>
+                    <span class="firma-watermark">Firma Aquí</span>
+                </div>
+
+                <span id="error-firma" class="form-error oculta">Debes realizar tu firma digital antes de guardar y finalizar la capacitación.</span>
+
+                <div class="firma-controles">
+                    <button type="button" id="btn-limpiar-firma" class="btn btn-outline-danger">
+                        🗑️ Borrar Firma
+                    </button>
+                </div>
+            </div>
+
+            <div class="card-footer footer-espaciado">
+                <button type="button" id="btn-volver-confirmaciones" class="btn btn-secondary">
+                    Volver a Declaraciones
+                </button>
+                <button type="button" id="btn-guardar-capacitacion" class="btn btn-success btn-lg">
+                    💾 Guardar y Finalizar Capacitación
+                </button>
+            </div>
+        </section>
+
+        <!-- PANTALLA 7: FINALIZADO (ÉXITO TOTAL) -->
+        <section id="pantalla-finalizado" class="card-pantalla oculta" aria-labelledby="titulo-finalizado">
+            <div class="finalizado-header">
+                <div class="icono-exito-grande">✓</div>
+                <h2 id="titulo-finalizado" class="card-titulo">¡Capacitación Completada con Éxito!</h2>
+                <p class="card-subtitulo">Tus datos, evaluación y firma digital han sido debidamente registrados y auditados en los servidores corporativos de Conecta Carga.</p>
+            </div>
+
+            <div class="finalizado-cuerpo">
+                <div class="resumen-tarjeta">
+                    <h3>Resumen del Registro Corporativo</h3>
+                    <ul class="resumen-lista">
+                        <li><strong>Colaborador:</strong> <span id="resumen-nombre">---</span></li>
+                        <li><strong>Correo Oficial:</strong> <span id="resumen-correo">---</span></li>
+                        <li><strong>Fecha y Hora de Cierre:</strong> <span id="resumen-fecha">---</span></li>
+                        <li><strong>Tiempo Total de Estudio:</strong> <span id="resumen-tiempo">---</span></li>
+                        <li><strong>Intentos en Examen:</strong> <span id="resumen-intentos">---</span></li>
+                        <li><strong>Estado de Base de Datos:</strong> <span class="badge-db-success">Sincronizado con Google Sheets</span></li>
+                    </ul>
+                </div>
+
+                <div class="alert-box alert-success">
+                    <p>El registro de tu progreso en la base de datos es inmutable. Ya puedes cerrar esta ventana con total seguridad o volver al inicio si necesitas consultar las directrices.</p>
+                </div>
+            </div>
+
+            <div class="card-footer">
+                <button type="button" id="btn-reiniciar-portal" class="btn btn-outline-primary">
+                    Volver al Inicio del Portal
+                </button>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- ==========================================================================
+         PIE DE PÁGINA CORPORATIVO
+         ========================================================================== -->
+    <footer class="footer-corporativo">
+        <div class="footer-container">
+            <p>&copy; 2026 Conecta Carga. Todos los derechos reservados. | Departamento de Operaciones y Tecnología.</p>
+            <p class="footer-subtext">Plataforma Corporativa de Capacitación v1.0.0 - Arquitectura SPA Vanilla JS.</p>
+        </div>
+    </footer>
+
+    <!-- ==========================================================================
+         LIBRERÍAS EXTERNAS CDN (Solo Signature Pad permitido)
+         ========================================================================== -->
+    <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.1.7/dist/signature_pad.umd.min.js"></script>
+
+    <!-- ==========================================================================
+         SCRIPTS MODULARES PROPIOS (Orden estricto de dependencias)
+         ========================================================================== -->
+    <script src="js/utilidades.js"></script>
+    <script src="js/sheets.js"></script>
+    <script src="js/preguntas.js"></script>
+    <script src="js/progreso.js"></script>
+    <script src="js/navegacion.js"></script>
+    <script src="js/formulario.js"></script>
+    <script src="js/contenido.js"></script>
+    <script src="js/examen.js"></script>
+    <script src="js/firma.js"></script>
+    <script src="js/app.js"></script>
+
+</body>
+</html>
