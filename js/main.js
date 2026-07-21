@@ -1,66 +1,51 @@
 /**
  * ============================================================================
- * CONTROLADOR PRINCIPAL Y FLUJO DE APLICACIÓN
+ * CONTROLADOR PRINCIPAL Y FLUJO DE APLICACIÓN (SPA)
  * Plataforma Corporativa de Capacitación - Conecta Carga
+ * Sincronizado exactamente con las pantallas e IDs del index.html
  * ============================================================================
  */
 
 document.addEventListener('DOMContentLoaded', () => {
     'use strict';
 
-    // Referencias a las vistas/pasos en el DOM
-    const pasos = {
-        1: document.getElementById('paso-registro'),
-        2: document.getElementById('paso-lectura'),
-        3: document.getElementById('paso-evaluacion'),
-        4: document.getElementById('paso-firma'),
-        5: document.getElementById('paso-completado')
-    };
+    // Mapeo estricto de pantallas de la aplicación por ID
+    const PANTALLAS = [
+        'pantalla-bienvenida',
+        'pantalla-formulario',
+        'pantalla-lectura',
+        'pantalla-examen',
+        'pantalla-confirmaciones',
+        'pantalla-firma',
+        'pantalla-finalizado'
+    ];
 
     /**
-     * Función de inicialización general de la app
+     * Cambia la visibilidad de las pantallas en la SPA.
+     * @param {string} idPantalla - ID de la sección a mostrar.
      */
-    function inicializarApp() {
-        configurarNavegacionPasoAPaso();
-        configurarFormularioRegistro();
-        configurarLectorCapacitacion();
-        configurarEvaluacionEventos();
-        configurarFirmaEventos();
-
-        // Inicializar Canvas de firma
-        FirmaDigital.inicializar('canvas-firma');
-
-        // Restaurar estado si existía una sesión previa
-        const estadoActual = GestorProgreso.obtenerEstado();
-        mostrarPaso(estadoActual.pasoActual || 1);
-
-        // Ocultar cargador al iniciar
-        Utilidades.toggleCargando(false);
-    }
-
-    /**
-     * Cambia la visibilidad de las pantallas según el paso especificado.
-     * @param {number} numeroPaso - Paso del 1 al 5.
-     */
-    function mostrarPaso(numeroPaso) {
-        Object.keys(pasos).forEach((pKey) => {
-            if (pasos[pKey]) {
-                if (parseInt(pKey, 10) === numeroPaso) {
-                    pasos[pKey].classList.remove('d-none');
+    function mostrarPantalla(idPantalla) {
+        PANTALLAS.forEach((id) => {
+            const el = document.getElementById(id);
+            if (el) {
+                if (id === idPantalla) {
+                    el.classList.remove('oculta', 'd-none');
+                    el.classList.add('activa');
                 } else {
-                    pasos[pKey].classList.add('d-none');
+                    el.classList.remove('activa');
+                    el.classList.add('oculta');
                 }
             }
         });
 
-        // Acciones específicas al entrar a cada paso
-        if (numeroPaso === 2) {
+        // Acciones automáticas al ingresar a pantallas específicas
+        if (idPantalla === 'pantalla-lectura' && typeof GestorProgreso !== 'undefined') {
             GestorProgreso.iniciarTemporizadorLectura();
-        } else {
+        } else if (typeof GestorProgreso !== 'undefined') {
             GestorProgreso.detenerTemporizadorLectura();
         }
 
-        if (numeroPaso === 3) {
+        if (idPantalla === 'pantalla-examen' && typeof EvaluacionUI !== 'undefined') {
             EvaluacionUI.renderizarPreguntas();
         }
 
@@ -68,184 +53,201 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     /**
-     * Vincula el evento de cambio de paso emitido por el GestorProgreso.
+     * PANTALLA 1: BIENVENIDA
      */
-    function configurarNavegacionPasoAPaso() {
-        window.addEventListener('cambioDePaso', (e) => {
-            mostrarPaso(e.detail.paso);
-        });
-
-        // Evento de actualización del reloj de lectura
-        window.addEventListener('tiempoLecturaActualizado', (e) => {
-            const contadorEl = document.getElementById('contador-tiempo-lectura');
-            if (contadorEl) {
-                contadorEl.textContent = Utilidades.formatearTiempo(e.detail.segundos);
-            }
-        });
+    function configurarBienvenida() {
+        const btnIniciar = document.getElementById('btn-iniciar-capacitacion');
+        if (btnIniciar) {
+            btnIniciar.addEventListener('click', () => {
+                mostrarPantalla('pantalla-formulario');
+            });
+        }
     }
 
     /**
-     * Gestiona el registro inicial e integra la verificación de correo duplicado en Google Sheets.
+     * PANTALLA 2: FORMULARIO DE REGISTRO
      */
     function configurarFormularioRegistro() {
-        const formRegistro = document.getElementById('form-registro-colaborador');
-        if (!formRegistro) return;
+        const formRegistro = document.getElementById('form-datos-empleado');
+        const btnVolver = document.getElementById('btn-volver-bienvenida');
 
-        formRegistro.addEventListener('submit', async (e) => {
-            e.preventDefault();
+        if (btnVolver) {
+            btnVolver.addEventListener('click', () => {
+                mostrarPantalla('pantalla-bienvenida');
+            });
+        }
 
-            const nombreInput = document.getElementById('reg-nombre');
-            const correoInput = document.getElementById('reg-correo');
-            const errorMsg = document.getElementById('reg-error-msg');
+        if (formRegistro) {
+            formRegistro.addEventListener('submit', async (e) => {
+                e.preventDefault();
 
-            const nombre = nombreInput ? nombreInput.value.trim() : '';
-            const correo = correoInput ? correoInput.value.trim() : '';
+                const nombreInput = document.getElementById('input-nombre');
+                const correoInput = document.getElementById('input-correo');
+                const errorNombre = document.getElementById('error-nombre');
+                const errorCorreo = document.getElementById('error-correo');
+                const alertaFormulario = document.getElementById('alerta-formulario');
 
-            if (errorMsg) errorMsg.classList.add('d-none');
+                // Ocultar mensajes previos
+                if (errorNombre) errorNombre.classList.add('oculta');
+                if (errorCorreo) errorCorreo.classList.add('oculta');
+                if (alertaFormulario) alertaFormulario.classList.add('oculta');
 
-            if (!nombre || !Utilidades.validarCorreo(correo)) {
-                if (errorMsg) {
-                    errorMsg.textContent = 'Por favor, ingresa un nombre válido y un correo electrónico corporativo correcto.';
-                    errorMsg.classList.remove('d-none');
+                const nombre = nombreInput ? nombreInput.value.trim() : '';
+                const correo = correoInput ? correoInput.value.trim() : '';
+
+                let tieneErrores = false;
+
+                if (!nombre || nombre.length < 3) {
+                    if (errorNombre) errorNombre.classList.remove('oculta');
+                    tieneErrores = true;
                 }
-                return;
-            }
 
-            Utilidades.toggleCargando(true, 'Verificando registro previo...');
+                const correoValido = typeof Utilidades !== 'undefined' 
+                    ? Utilidades.validarCorreo(correo) 
+                    : /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(correo);
 
-            // Consultar a Google Sheets si el correo ya realizó la capacitación
-            const resultadoVerificacion = await SheetsAPI.verificarCorreoDuplicado(correo);
-            Utilidades.toggleCargando(false);
-
-            if (resultadoVerificacion.duplicado) {
-                if (errorMsg) {
-                    errorMsg.textContent = `Este correo ya registró una capacitación el ${resultadoVerificacion.fecha}. No es necesario realizarla nuevamente.`;
-                    errorMsg.classList.remove('d-none');
+                if (!correo || !correoValido) {
+                    if (errorCorreo) errorCorreo.classList.remove('oculta');
+                    tieneErrores = true;
                 }
-                return;
-            }
 
-            // Registrar usuario en estado local y pasar a lectura
-            GestorProgreso.establecerUsuario(nombre, correo);
-            GestorProgreso.cambiarPaso(2);
+                if (tieneErrores) return;
+
+                // Mostrar cargador y validar correo duplicado en Google Sheets
+                if (typeof Utilidades !== 'undefined') Utilidades.toggleCargando(true, 'Verificando registro previo...');
+
+                let resultadoVerificacion = { duplicado: false };
+                if (typeof SheetsAPI !== 'undefined') {
+                    resultadoVerificacion = await SheetsAPI.verificarCorreoDuplicado(correo);
+                }
+
+                if (typeof Utilidades !== 'undefined') Utilidades.toggleCargando(false);
+
+                if (resultadoVerificacion.duplicado) {
+                    if (alertaFormulario) {
+                        alertaFormulario.innerHTML = `<p><strong>Atención:</strong> Este correo ya registró una capacitación el <strong>${resultadoVerificacion.fecha || 'día registrado'}</strong>. No es necesario realizarla nuevamente.</p>`;
+                        alertaFormulario.className = 'alert-box alert-warning';
+                        alertaFormulario.classList.remove('oculta');
+                    }
+                    return;
+                }
+
+                // Guardar usuario en el estado y pasar a lectura
+                if (typeof GestorProgreso !== 'undefined') {
+                    GestorProgreso.establecerUsuario(nombre, correo);
+                }
+
+                mostrarPantalla('pantalla-lectura');
+            });
+        }
+    }
+
+    /**
+     * PANTALLA 3 Y 4: LECTURA Y EXAMEN
+     */
+    function configurarEventosGenerales() {
+        // Escuchar eventos globales de la aplicación si existen en otros módulos
+        window.addEventListener('cambioDePantalla', (e) => {
+            if (e.detail && e.detail.pantalla) {
+                mostrarPantalla(e.detail.pantalla);
+            }
         });
     }
 
     /**
-     * Configura la verificación de lectura obligatoria del material.
+     * PANTALLA 5: CONFIRMACIONES LEGALES
      */
-    function configurarLectorCapacitacion() {
-        const btnEntendido = document.getElementById('btn-confirmar-lectura');
-        const checkLectura = document.getElementById('check-confirmacion-lectura');
-
-        if (checkLectura && btnEntendido) {
-            checkLectura.addEventListener('change', () => {
-                btnEntendido.disabled = !checkLectura.checked;
-            });
-        }
-
-        if (btnEntendido) {
-            btnEntendido.addEventListener('click', () => {
-                GestorProgreso.setLecturaCompletada(true);
-                GestorProgreso.cambiarPaso(3);
-            });
-        }
-    }
-
-    /**
-     * Vincula los botones de acción de la evaluación.
-     */
-    function configurarEvaluacionEventos() {
-        const btnEnviar = document.getElementById('btn-enviar-evaluacion');
-        const btnReintentar = document.getElementById('btn-reintentar-evaluacion');
+    function configurarConfirmaciones() {
+        const checkLectura = document.getElementById('check-lectura');
+        const checkComprension = document.getElementById('check-comprension');
         const btnIrFirma = document.getElementById('btn-ir-firma');
+        const alertaConfirmaciones = document.getElementById('alerta-confirmaciones');
 
-        if (btnEnviar) {
-            btnEnviar.addEventListener('click', () => {
-                EvaluacionUI.procesarEvaluacion();
-            });
+        function validarChecks() {
+            const ambosAceptados = checkLectura && checkLectura.checked && checkComprension && checkComprension.checked;
+            if (btnIrFirma) btnIrFirma.disabled = !ambosAceptados;
+            if (alertaConfirmaciones) {
+                if (ambosAceptados) alertaConfirmaciones.classList.add('oculta');
+            }
         }
 
-        if (btnReintentar) {
-            btnReintentar.addEventListener('click', () => {
-                EvaluacionUI.reiniciarEvaluacion();
-            });
-        }
+        if (checkLectura) checkLectura.addEventListener('change', validarChecks);
+        if (checkComprension) checkComprension.addEventListener('change', validarChecks);
 
         if (btnIrFirma) {
             btnIrFirma.addEventListener('click', () => {
-                GestorProgreso.cambiarPaso(4);
+                if (checkLectura && checkComprension && checkLectura.checked && checkComprension.checked) {
+                    mostrarPantalla('pantalla-firma');
+                } else if (alertaConfirmaciones) {
+                    alertaConfirmaciones.classList.remove('oculta');
+                }
             });
         }
     }
 
     /**
-     * Configura el lienzo de firma, checkboxes de conformidad y el envío final de datos.
+     * PANTALLA 6: FIRMA DIGITAL Y ENVÍO FINAL
      */
-    function configurarFirmaEventos() {
+    function configurarFirma() {
         const btnLimpiar = document.getElementById('btn-limpiar-firma');
-        const checkComprension = document.getElementById('check-declaracion-comprension');
-        const btnFinalizar = document.getElementById('btn-finalizar-capacitacion');
-        const errorFirmaMsg = document.getElementById('firma-error-msg');
+        const btnVolver = document.getElementById('btn-volver-confirmaciones');
+        const btnGuardar = document.getElementById('btn-guardar-capacitacion');
+        const errorFirma = document.getElementById('error-firma');
+
+        if (btnVolver) {
+            btnVolver.addEventListener('click', () => {
+                mostrarPantalla('pantalla-confirmaciones');
+            });
+        }
 
         if (btnLimpiar) {
             btnLimpiar.addEventListener('click', () => {
-                FirmaDigital.limpiar();
+                if (typeof FirmaDigital !== 'undefined') FirmaDigital.limpiar();
             });
         }
 
-        if (btnFinalizar) {
-            btnFinalizar.addEventListener('click', async () => {
-                if (errorFirmaMsg) errorFirmaMsg.classList.add('d-none');
+        if (btnGuardar) {
+            btnGuardar.addEventListener('click', async () => {
+                if (errorFirma) errorFirma.classList.add('oculta');
 
-                if (!FirmaDigital.esValida()) {
-                    if (errorFirmaMsg) {
-                        errorFirmaMsg.textContent = 'Por favor, dibuje su firma manuscrita en el recuadro antes de continuar.';
-                        errorFirmaMsg.classList.remove('d-none');
+                if (typeof FirmaDigital !== 'undefined' && !FirmaDigital.esValida()) {
+                    if (errorFirma) {
+                        errorFirma.textContent = 'Debes realizar tu firma digital antes de guardar y finalizar la capacitación.';
+                        errorFirma.classList.remove('oculta');
                     }
                     return;
                 }
 
-                if (checkComprension && !checkComprension.checked) {
-                    if (errorFirmaMsg) {
-                        errorFirmaMsg.textContent = 'Debe declarar que ha leído y comprendido todo el material aceptando el término.';
-                        errorFirmaMsg.classList.remove('d-none');
-                    }
-                    return;
-                }
+                const firmaBase64 = typeof FirmaDigital !== 'undefined' ? FirmaDigital.obtenerBase64() : '';
+                const estado = typeof GestorProgreso !== 'undefined' ? GestorProgreso.obtenerEstado() : {};
 
-                // Extraer la firma e integrar en el estado
-                const firmaBase64 = FirmaDigital.obtenerBase64();
-                GestorProgreso.guardarFirma(firmaBase64);
-
-                const estadoCompleto = GestorProgreso.obtenerEstado();
-
-                const payloadEnvio = {
-                    nombre: estadoCompleto.datosUsuario.nombre,
-                    correo: estadoCompleto.datosUsuario.correo,
-                    fecha: Utilidades.obtenerFechaActual(),
-                    hora: Utilidades.obtenerHoraActual(),
-                    tiempoLectura: estadoCompleto.tiempoLecturaSegundos,
-                    intentos: estadoCompleto.intentosEvaluacion,
-                    errores: estadoCompleto.erroresAcumulados,
-                    checkLectura: estadoCompleto.lecturaCompletada,
-                    checkComprension: estadoCompleto.comprensionAceptada,
-                    firmaBase64: estadoCompleto.firmaBase64
+                const payload = {
+                    nombre: (estado.datosUsuario && estado.datosUsuario.nombre) || document.getElementById('input-nombre')?.value || 'N/A',
+                    correo: (estado.datosUsuario && estado.datosUsuario.correo) || document.getElementById('input-correo')?.value || 'N/A',
+                    fecha: typeof Utilidades !== 'undefined' ? Utilidades.obtenerFechaActual() : new Date().toLocaleDateString('es-CO'),
+                    hora: typeof Utilidades !== 'undefined' ? Utilidades.obtenerHoraActual() : new Date().toLocaleTimeString('es-CO'),
+                    tiempoLectura: estado.tiempoLecturaSegundos || 0,
+                    intentos: estado.intentosEvaluacion || 1,
+                    errores: estado.erroresAcumulados || 0,
+                    firmaBase64: firmaBase64
                 };
 
-                Utilidades.toggleCargando(true, 'Guardando registro oficial de capacitación...');
+                if (typeof Utilidades !== 'undefined') Utilidades.toggleCargando(true, 'Guardando registro oficial de capacitación...');
 
-                const resultadoEnvio = await SheetsAPI.registrarCapacitacion(payloadEnvio);
+                let resultadoEnvio = { exito: true };
+                if (typeof SheetsAPI !== 'undefined') {
+                    resultadoEnvio = await SheetsAPI.registrarCapacitacion(payload);
+                }
 
-                Utilidades.toggleCargando(false);
+                if (typeof Utilidades !== 'undefined') Utilidades.toggleCargando(false);
 
                 if (resultadoEnvio.exito) {
-                    GestorProgreso.cambiarPaso(5);
-                    renderizarResumenFinal(payloadEnvio);
+                    renderizarResumenFinal(payload);
+                    mostrarPantalla('pantalla-finalizado');
                 } else {
-                    if (errorFirmaMsg) {
-                        errorFirmaMsg.textContent = resultadoEnvio.mensaje || 'Error al guardar la información. Por favor, reintente.';
-                        errorFirmaMsg.classList.remove('d-none');
+                    if (errorFirma) {
+                        errorFirma.textContent = resultadoEnvio.mensaje || 'Error al guardar en el servidor. Por favor reintenta.';
+                        errorFirma.classList.remove('oculta');
                     }
                 }
             });
@@ -253,31 +255,56 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     /**
-     * Renderiza el comprobante final de conclusión exitosa.
+     * PANTALLA 7: RESUMEN FINAL Y REINICIO
      * @param {Object} datos 
      */
     function renderizarResumenFinal(datos) {
-        const contenedorResumen = document.getElementById('resumen-comprobante');
-        if (!contenedorResumen) return;
+        const elNombre = document.getElementById('resumen-nombre');
+        const elCorreo = document.getElementById('resumen-correo');
+        const elFecha = document.getElementById('resumen-fecha');
+        const elTiempo = document.getElementById('resumen-tiempo');
+        const elIntentos = document.getElementById('resumen-intentos');
 
-        contenedorResumen.innerHTML = `
-            <div class="card border-success p-4 shadow-sm bg-light">
-                <h5 class="fw-bold text-success mb-3"><i class="bi bi-shield-check me-2"></i>Comprobante Digital de Registro</h5>
-                <ul class="list-group list-group-flush mb-3">
-                    <li class="list-group-item bg-transparent"><strong>Colaborador:</strong> ${Utilidades.sanitizarHTML(datos.nombre)}</li>
-                    <li class="list-group-item bg-transparent"><strong>Correo:</strong> ${Utilidades.sanitizarHTML(datos.correo)}</li>
-                    <li class="list-group-item bg-transparent"><strong>Fecha / Hora:</strong> ${datos.fecha} a las ${datos.hora}</li>
-                    <li class="list-group-item bg-transparent"><strong>Tiempo de Lectura:</strong> ${Utilidades.formatearTiempo(datos.tiempoLectura)}</li>
-                    <li class="list-group-item bg-transparent"><strong>Estado de Evaluación:</strong> <span class="badge bg-success">Aprobado</span></li>
-                </ul>
-                <div class="text-center mt-2">
-                    <p class="small text-muted mb-1">Firma digital registrada:</p>
-                    <img src="${datos.firmaBase64}" alt="Firma Registrada" class="border p-2 rounded bg-white" style="max-height: 100px;">
-                </div>
-            </div>
-        `;
+        if (elNombre) elNombre.textContent = datos.nombre;
+        if (elCorreo) elCorreo.textContent = datos.correo;
+        if (elFecha) elFecha.textContent = `${datos.fecha} - ${datos.hora}`;
+        if (elTiempo) elTiempo.textContent = typeof Utilidades !== 'undefined' ? Utilidades.formatearTiempo(datos.tiempoLectura) : `${datos.tiempoLectura} seg`;
+        if (elIntentos) elIntentos.textContent = datos.intentos;
+
+        const btnReiniciar = document.getElementById('btn-reiniciar-portal');
+        if (btnReiniciar) {
+            btnReiniciar.onclick = () => {
+                if (typeof GestorProgreso !== 'undefined') GestorProgreso.reiniciar();
+                mostrarPantalla('pantalla-bienvenida');
+            };
+        }
     }
 
-    // --- EJECUCIÓN INICIAL AL FINAL ---
+    /**
+     * INICIALIZACIÓN GENERAL DE LA APLICACIÓN
+     */
+    function inicializarApp() {
+        // Inicializar Canvas de firma digital
+        if (typeof FirmaDigital !== 'undefined') {
+            FirmaDigital.inicializar('canvas-firma');
+        }
+
+        // Configurar escuchadores de eventos
+        configurarBienvenida();
+        configurarFormularioRegistro();
+        configurarEventosGenerales();
+        configurarConfirmaciones();
+        configurarFirma();
+
+        // Mostrar la pantalla inicial de bienvenida
+        mostrarPantalla('pantalla-bienvenida');
+
+        // Garantizar que el loader esté oculto al iniciar
+        if (typeof Utilidades !== 'undefined') {
+            Utilidades.toggleCargando(false);
+        }
+    }
+
+    // Ejecutar inicio
     inicializarApp();
 });
