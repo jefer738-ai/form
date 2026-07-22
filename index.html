@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Portal de Inducción y Capacitación</title>
+  <title>Capacitación - Novedades Conecta Carga</title>
   <style>
     /* ==========================================================================
        ESTILOS GLOBALES Y PALETA DE COLORES
@@ -78,8 +78,8 @@
     
     <!-- PASO 1: REGISTRO DIRECTO -->
     <div id="step-1" class="step active">
-      <h2>Registro de Inducción</h2>
-      <p>Ingresa tus datos para iniciar la lectura del material.</p>
+      <h2>Capacitación: Novedades Conecta Carga</h2>
+      <p>Ingresa tus datos para iniciar la lectura del material sobre las nuevas funcionalidades de la plataforma.</p>
       <div id="alert-step-1" class="alert alert-danger">Por favor completa todos los campos requeridos.</div>
       
       <form id="form-registro">
@@ -88,44 +88,61 @@
           <input type="text" id="nombre" placeholder="Ej. Juan Pérez" required>
         </div>
         <div class="form-group">
-          <label for="correo">Correo Electrónico</label>
+          <label for="correo">Correo Electrónico Corporativo</label>
           <input type="email" id="correo" placeholder="ejemplo@empresa.com" required>
         </div>
-        <button type="submit" class="btn btn-primary" style="width: 100%;">Comenzar Lectura</button>
+        <button type="submit" class="btn btn-primary" style="width: 100%;">Comenzar Capacitación</button>
       </form>
     </div>
 
     <!-- PASO 2: LECTURA EN BLOQUES -->
     <div id="step-2" class="step">
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-        <span id="label-bloque" style="font-size:0.85rem; font-weight:600; color:var(--text-muted);">Bloque 1 de 5</span>
+        <span id="label-bloque" style="font-size:0.85rem; font-weight:600; color:var(--text-muted);">Bloque 1 de 4</span>
       </div>
       <div class="progress-bar"><div id="progress-fill" class="progress-fill"></div></div>
 
       <div id="contenido-lectura">
+        <!-- BLOQUE 1 -->
         <div class="bloque-content" id="bloque-1">
-          <h3>1. Introducción y Normativa</h3>
-          <p>Bienvenido al módulo de inducción. En esta sección revisaremos los lineamientos generales de seguridad y convivencia dentro de la organización.</p>
-          <p>Es indispensable conocer las rutas de evacuación y mantener las áreas de trabajo despejadas para prevenir incidentes.</p>
+          <h3>1. Nueva App Móvil y Portal de Clientes</h3>
+          <p><strong>Tu operación y tus clientes, siempre conectados.</strong> Con la nueva App Móvil de Conecta Carga, tus clientes pueden ingresar al Portal de Clientes desde su celular y consultar la información de su carga desde cualquier lugar.</p>
+          <p><strong>¿Cómo crear el acceso para tu cliente?</strong></p>
+          <p>• Ingresa a <em>Asociados al negocio > Clientes</em>, selecciona el cliente y dirígete a la pestaña <strong>7. Portal de Clientes</strong>.</p>
+          <p>• Allí asigna el usuario y la contraseña que utilizará para ingresar a la aplicación y comparte las credenciales con él.</p>
         </div>
+
+        <!-- BLOQUE 2 -->
         <div class="bloque-content" id="bloque-2" style="display:none;">
-          <h3>2. Políticas de Seguridad e Higiene</h3>
-          <p>El uso del equipo de protección personal (EPP) es obligatorio en todas las zonas operativas definidas por la empresa.</p>
-          <p>Cualquier condición de riesgo debe reportarse inmediatamente al supervisor directo o al área de SST.</p>
+          <h3>2. Descarga e Ingreso a la App Móvil</h3>
+          <p>Pídele a tu cliente que descargue la <strong>App Móvil de Conecta Carga</strong> desde la App Store (iOS) o Google Play Store (Android).</p>
+          <p><strong>Pasos para el ingreso del cliente:</strong></p>
+          <p>1. Seleccionar la opción <strong>Portal de Clientes</strong> dentro de la aplicación.</p>
+          <p>2. Ingresar el <strong>ID de la empresa</strong>, el <strong>usuario</strong> y la <strong>contraseña</strong> que le asignaste previamente.</p>
+          <p>¡Listo! Tu cliente podrá consultar el estado de sus embarques y acceder a la información de su carga en tiempo real.</p>
         </div>
+
+        <!-- BLOQUE 3 -->
         <div class="bloque-content" id="bloque-3" style="display:none;">
-          <h3>3. Código de Conducta</h3>
-          <p>Mantenemos un compromiso firme con el respeto, la inclusión y la transparencia en cada una de nuestras interacciones diarias.</p>
-          <p>No se tolera ningún tipo de discriminación ni acoso dentro ni fuera de las instalaciones corporativas.</p>
+          <h3>3. Tracking en Línea</h3>
+          <p><strong>Novedades de tus embarques, sin procesos manuales.</strong> Consulta automáticamente las novedades de tus documentos máster directamente desde las navieras y aerolíneas disponibles en Conecta Carga.</p>
+          <p><strong>¿Cómo consultar el estado de tus embarques?</strong></p>
+          <p>1. Ingresa a <strong>Tracking en Línea</strong> en el menú principal y haz clic en la naviera o aerolínea correspondiente.</p>
+          <p>2. Selecciona el tipo de documento a consultar: <strong>Booking</strong> o <strong>BL</strong>, e ingresa el número de BL, Booking o DO.</p>
+          <p>3. ¡Listo! Visualiza las novedades y el estado actualizado de tu embarque en pocos segundos.</p>
         </div>
+
+        <!-- BLOQUE 4 -->
         <div class="bloque-content" id="bloque-4" style="display:none;">
-          <h3>4. Manejo de Información y Confidencialidad</h3>
-          <p>Toda la información operativa, comercial y de clientes tiene carácter confidencial y debe ser resguardada.</p>
-          <p>Queda strictly prohibido compartir credenciales de acceso o extraer archivos no autorizados.</p>
-        </div>
-        <div class="bloque-content" id="bloque-5" style="display:none;">
-          <h3>5. Compromiso Operativo</h3>
-          <p>Has llegado al final del material de lectura. Al continuar, presentarás una breve evaluación de 2 preguntas para validar los conceptos clave.</p>
+          <h3>4. Estados de Cuenta por Embarque</h3>
+          <p>Visualiza el estado de cuenta de cada embarque de forma clara para facilitar el seguimiento de cartera, pagos y cobros.</p>
+          <p><strong>Pasos para consultar la información financiera:</strong></p>
+          <p>1. En la pantalla de <em>Embarques</em>, busca y selecciona el embarque que deseas consultar.</p>
+          <p>2. Dirígete a la pestaña <strong>19. Estado de Cuenta</strong> y haz clic para visualizar la información.</p>
+          <p>3. Consulta en una sola pantalla el resumen del embarque, las cuentas por cobrar a clientes y las cuentas por pagar a proveedores.</p>
+          <p style="margin-top: 15px; background: #eff6ff; padding: 12px; border-radius: 8px; font-weight: 500;">
+            💡 Conecta Carga centraliza la gestión de tus embarques, mejora la experiencia de tus clientes y brinda mayor control operativo y financiero desde una sola plataforma.
+          </p>
         </div>
       </div>
 
@@ -135,10 +152,10 @@
       </div>
     </div>
 
-    <!-- PASO 3: EVALUACIÓN ALEATORIA (2 PREGUNTAS) -->
+    <!-- PASO 3: EVALUACIÓN ALEATORIA (2 PREGUNTAS SOBRE EL NUEVO MATERIAL) -->
     <div id="step-3" class="step">
       <h2>Evaluación de Comprensión</h2>
-      <p>Responde correctamente las siguientes 2 preguntas para proceder con tu firma.</p>
+      <p>Responde correctamente las siguientes 2 preguntas para validar tu lectura y proceder con tu firma.</p>
       
       <div id="alert-quiz" class="alert alert-danger">Respuestas incorrectas. Se han cargado 2 preguntas nuevas. ¡Inténtalo de nuevo!</div>
 
@@ -151,7 +168,7 @@
     <!-- PASO 4: FIRMA DIGITAL -->
     <div id="step-4" class="step">
       <h2>Firma de Conformidad</h2>
-      <p>Declaro haber leído y comprendido la totalidad del material de inducción.</p>
+      <p>Declaro haber leído y comprendido la actualización sobre la App Móvil, Tracking en Línea y Estados de Cuenta de Conecta Carga.</p>
       
       <div id="alert-firma" class="alert alert-danger">Por favor dibuja tu firma antes de finalizar.</div>
 
@@ -167,11 +184,12 @@
 
     <!-- PASO 5: RESUMEN / FINALIZADO -->
     <div id="step-5" class="step">
-      <div class="alert alert-success" style="display:block;">¡Inducción completada con éxito y registrada en el sistema!</div>
-      <h2>Comprobante de Inducción</h2>
+      <div class="alert alert-success" style="display:block;">¡Capacitación completada con éxito y registrada en el sistema!</div>
+      <h2>Comprobante de Capacitación</h2>
       <div style="margin: 20px 0; font-size: 0.95rem; line-height: 1.8;">
         <p><strong>Nombre:</strong> <span id="resumen-nombre">-</span></p>
         <p><strong>Correo:</strong> <span id="resumen-correo">-</span></p>
+        <p><strong>Tema:</strong> Novedades Plataforma Conecta Carga</p>
         <p><strong>Fecha y Hora:</strong> <span id="resumen-fecha">-</span></p>
       </div>
 
@@ -194,36 +212,36 @@
 // ⚠️ URL DE TU GOOGLE APPS SCRIPT
 const GOOGLE_SHEETS_URL = "https://script.google.com/macros/s/AKfycbyOYplzv7m1iVg_kRobOXyF6JJgokksPwjt5lrW74HaBJ38BdTg98VPe7SsuzCh5PtL/exec";
 
-// BANCO GENERAL DE PREGUNTAS
+// BANCO DE PREGUNTAS ADAPTADO A LA NUEVA INFORMACIÓN DE CONECTA CARGA
 const BANCO_PREGUNTAS = [
   {
     id: 1,
-    pregunta: "¿Qué es obligatorio utilizar en las zonas operativas?",
-    opciones: ["Traje formal", "Equipo de Protección Personal (EPP)", "Ropa deportiva"],
+    pregunta: "¿En qué pestaña de 'Asociados al negocio > Clientes' se asigna el usuario y contraseña del Portal de Clientes?",
+    opciones: ["Pestaña 1. General", "Pestaña 7. Portal de Clientes", "Pestaña 19. Estado de Cuenta"],
     correcta: 1
   },
   {
     id: 2,
-    pregunta: "¿A quién se debe reportar una condición de riesgo?",
-    opciones: ["Al supervisor directo o área de SST", "A un compañero de otro departamento", "A nadie"],
-    correcta: 0
-  },
-  {
-    id: 3,
-    pregunta: "¿Cuál es la política respecto a la información de la empresa?",
-    opciones: ["Es pública", "Es confidencial y debe resguardarse", "Se puede compartir en redes"],
+    pregunta: "¿Qué datos debe ingresar el cliente en la App Móvil para acceder al Portal de Clientes?",
+    opciones: ["Solo su correo electrónico", "ID de la empresa, usuario y contraseña", "Número de guía o BL únicamente"],
     correcta: 1
   },
   {
+    id: 3,
+    pregunta: "¿Qué tipo de documentos se pueden consultar en la herramienta de Tracking en Línea?",
+    opciones: ["Booking o BL (ingresando número de BL, Booking o DO)", "Facturas de venta electrónicas", "Contratos comerciales"],
+    correcta: 0
+  },
+  {
     id: 4,
-    pregunta: "¿Qué conducta se promueve en la interacción diaria?",
-    opciones: ["Competencia agresiva", "Respeto, inclusión y transparencia", "Trabajo individual aislado"],
+    pregunta: "¿En qué pestaña se consultan las cuentas por cobrar a clientes y cuentas por pagar a proveedores del embarque?",
+    opciones: ["Pestaña 7. Portal de Clientes", "Pestaña 19. Estado de Cuenta", "Menú principal de Tracking"],
     correcta: 1
   },
   {
     id: 5,
-    pregunta: "¿Qué acción se debe tomar durante una evacuación?",
-    opciones: ["Seguir las rutas marcadas y mantener la calma", "Usar los ascensores", "Esperar en la oficina"],
+    pregunta: "¿Cuál es el beneficio principal de la función Tracking en Línea?",
+    opciones: ["Consultar novedades directamente desde navieras y aerolíneas sin procesos manuales", "Descargar formatos de impresión en papel", "Generar llamadas automáticas a los clientes"],
     correcta: 0
   }
 ];
@@ -231,7 +249,7 @@ const BANCO_PREGUNTAS = [
 // ESTADO GLOBAL
 let usuario = { nombre: '', correo: '' };
 let bloqueActual = 1;
-const TOTAL_BLOQUES = 5;
+const TOTAL_BLOQUES = 4; // Ajustado a los 4 bloques del nuevo contenido
 let preguntasActuales = [];
 let idsPreguntasAnteriores = [];
 let intentosQuiz = 1;
